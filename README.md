@@ -36,6 +36,8 @@ In a project where you want to consume your package simply run:
 npx yalc link my-react-package
 ```
 
+To update run `yarn build` or `yarn yalc push` from this repository.
+
 Learn more about `yalc` [here](https://github.com/wclr/yalc).
 
 ### 📩 Committing
