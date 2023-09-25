@@ -92,6 +92,7 @@
     "@commitlint/config-conventional": "17.7.0",
     "@ryansonshine/commitizen": "4.2.8",
     "@ryansonshine/cz-conventional-changelog": "3.3.4",
+    "@storybook/addon-docs": "^7.4.5",
     "@storybook/addon-essentials": "7.4.0",
     "@storybook/addon-interactions": "7.4.0",
     "@storybook/addon-links": "7.4.0",
