@@ -6,15 +6,14 @@ import clsx from 'clsx';
 import { format } from 'date-fns';
 import { toDate } from 'date-fns-tz';
 import mockData from '../../mockData.json';
-import { ErrorMessage } from '../bootstrap';
-import { FullPageLoading } from '../bootstrap/Loading';
-import { FormLabel } from '../bootstrap/FormLabel';
+import { ErrorMessage, FullPageLoading, FormLabel } from '../bootstrap';
 
 const parseDateTimeFromServer = (dateTimeStr: string): Date =>
   // IMPORTANT: This must use date-fns-tz to convert to local timezone.
   toDate(dateTimeStr);
 const formatDateTime = (date: Date) => format(date, 'dd-MMM-yyyy HH:mm');
 
+// @utils
 const makeArrayFromRange = (start: number, end: number) => {
   if (start > end) {
     throw new Error('start must be < end');
@@ -37,6 +36,7 @@ type Props = QueryParamsPager & {
   className?: string;
 };
 
+// @component, needs work.
 const PaginationUsingQueryParams: FC<Props> = ({
   updatePage,
   totalItems,
@@ -199,15 +199,7 @@ function filtersReducer<T extends UrlParams>(s: T, a: Actions<T>): T {
 
 const ITEMS_PER_PAGE = 5;
 
-type MockDataItem = {
-  breed: string;
-  created: string;
-  description: string;
-  name: string;
-  ownersFirstName: string;
-  ownersLastName: string;
-  ownersTelephone: string;
-};
+type MockDataItem = (typeof mockData)[0];
 
 type MockDataQueryResult = {
   results: MockDataItem[];
@@ -251,7 +243,6 @@ export const UrlParamsFilteredTable: FC<UrlParamsFilteredTableProps> = ({
   const { query, isReady, replace, asPath } = useRouter();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
-  const [areFiltersOpenMob, setAreFiltersOpenMob] = useState(false);
   const [paramsReady, setParamsReady] = useState(false);
 
   const [data, setData] = useState<MockDataQueryResult | null>(null);
@@ -286,8 +277,6 @@ export const UrlParamsFilteredTable: FC<UrlParamsFilteredTableProps> = ({
 
     // Set live filters & url.
     updateLiveFilters({ ...DEFAULT_LIVE_FILTERS });
-
-    setAreFiltersOpenMob(false);
   };
 
   // This will not run when the URL changes (only on mount).
@@ -359,17 +348,10 @@ export const UrlParamsFilteredTable: FC<UrlParamsFilteredTableProps> = ({
   return (
     // Wrap with error boundary & button to reload page.
     <div>
-      <pre className="bg-light py-2">{`Path: ${JSON.stringify(asPath)}`}</pre>
+      <pre className="bg-light py-2">{asPath}</pre>
 
       {/* Render the filters */}
-      {/* Filter panel, force open on LG+ */}
-      <div
-        className={clsx(
-          { 'd-none': !areFiltersOpenMob },
-          'd-lg-block',
-          's4a-admin_filters_container'
-        )}
-      >
+      <div>
         <form
           onSubmit={(ev) => {
             ev.preventDefault();
@@ -378,12 +360,11 @@ export const UrlParamsFilteredTable: FC<UrlParamsFilteredTableProps> = ({
               ...filtersTemp,
               page: 1,
             });
-            setAreFiltersOpenMob(false);
           }}
           className="mb-4"
         >
           <div className="row g-2 align-items-end flex-lg-nowrap">
-            <div className="col-12 col-sm-3">
+            <div className="col-12 col-md-4 col-lg-3">
               <FormLabel htmlFor="name">Name</FormLabel>
               <input
                 id="name"
@@ -398,19 +379,20 @@ export const UrlParamsFilteredTable: FC<UrlParamsFilteredTableProps> = ({
                 }}
               />
             </div>
-            <div className="col-12 col-lg-auto">
+            <div className="col-12 col-md-auto">
               <button className="btn btn-secondary w-100" type="submit">
                 Apply Filters
               </button>
             </div>
 
-            <div className="col-12 col-lg-auto">
-              <div style={{ minWidth: 65 }}>
+            <div className="col-12 col-md-auto">
+              <div>
                 {hasFiltersApplied && (
                   <button
                     className="btn btn-outline-danger"
                     type="button"
                     onClick={resetFilters}
+                    style={{ minWidth: 115 }}
                   >
                     Clear Filters
                   </button>
@@ -427,11 +409,12 @@ export const UrlParamsFilteredTable: FC<UrlParamsFilteredTableProps> = ({
           <thead>
             <tr>
               <th scope="col">Name</th>
-              <th scope="col">Breed</th>
-              <th scope="col">Description</th>
-              <th scope="col">Owner</th>
+              <th scope="col">Age</th>
+              <th scope="col">Gender</th>
+              <th scope="col">Company</th>
+              <th scope="col">Email</th>
               <th scope="col">Telephone</th>
-              <th scope="col">Created</th>
+              <th scope="col">Registered</th>
             </tr>
           </thead>
           <tbody>
@@ -440,17 +423,16 @@ export const UrlParamsFilteredTable: FC<UrlParamsFilteredTableProps> = ({
                 <td colSpan={6}>No data found.</td>
               </tr>
             ) : (
-              data.results.map((dog) => (
-                <tr key={`${dog.name}-${dog.breed}`}>
-                  <td>{dog.name}</td>
-                  <td>{dog.breed}</td>
-                  <td>{dog.description}</td>
+              data.results.map((person) => (
+                <tr key={person.id}>
+                  <td>{person.name}</td>
+                  <td>{person.age}</td>
+                  <td>{person.gender}</td>
+                  <td>{person.company}</td>
+                  <td>{person.email}</td>
+                  <td>{person.phone}</td>
                   <td>
-                    {[dog.ownersFirstName, dog.ownersLastName].join(' ').trim()}
-                  </td>
-                  <td>{dog.ownersTelephone}</td>
-                  <td>
-                    {formatDateTime(parseDateTimeFromServer(dog.created))}
+                    {formatDateTime(parseDateTimeFromServer(person.registered))}
                   </td>
                 </tr>
               ))
@@ -474,8 +456,15 @@ export const UrlParamsFilteredTable: FC<UrlParamsFilteredTableProps> = ({
 };
 
 const meta: Meta<typeof UrlParamsFilteredTable> = {
-  title: 'UrlParamsFilteredTableStory',
+  title: 'Url Params Filtered Table',
   component: UrlParamsFilteredTable,
+  parameters: {
+    docs: {
+      source: {
+        type: 'code',
+      },
+    },
+  },
 };
 
 export default meta;
