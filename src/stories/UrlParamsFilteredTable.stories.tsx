@@ -8,6 +8,7 @@ import { toDate } from 'date-fns-tz';
 import mockData from '../../mockData.json';
 import { ErrorMessage } from '../bootstrap';
 import { FullPageLoading } from '../bootstrap/Loading';
+import { FormLabel } from '../bootstrap/FormLabel';
 
 const parseDateTimeFromServer = (dateTimeStr: string): Date =>
   // IMPORTANT: This must use date-fns-tz to convert to local timezone.
@@ -383,9 +384,7 @@ export const UrlParamsFilteredTable: FC<UrlParamsFilteredTableProps> = ({
         >
           <div className="row g-2 align-items-end flex-lg-nowrap">
             <div className="col-12 col-sm-3">
-              {/* @todo: False positive? */}
-              {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
-              <label htmlFor="name">Name</label>
+              <FormLabel htmlFor="name">Name</FormLabel>
               <input
                 id="name"
                 type="text"
@@ -468,6 +467,7 @@ export const UrlParamsFilteredTable: FC<UrlParamsFilteredTableProps> = ({
         updatePage={({ page }) => {
           updateLiveFilters({ ...filters, page });
         }}
+        className="mt-3 d-flex justify-content-center"
       />
     </div>
   );
