@@ -1,9 +1,18 @@
 import { FC, useEffect, useReducer, useState } from 'react';
-import { Meta, StoryObj } from '@storybook/react';
+import { Meta } from '@storybook/react';
 import { useRouter } from 'next-router-mock';
 import { isEqual } from 'lodash';
 import clsx from 'clsx';
+import { format } from 'date-fns';
+import { toDate } from 'date-fns-tz';
 import mockData from '../../mockData.json';
+import { ErrorMessage } from '../bootstrap';
+import { FullPageLoading } from '../bootstrap/Loading';
+
+const parseDateTimeFromServer = (dateTimeStr: string): Date =>
+  // IMPORTANT: This must use date-fns-tz to convert to local timezone.
+  toDate(dateTimeStr);
+const formatDateTime = (date: Date) => format(date, 'dd-MMM-yyyy HH:mm');
 
 const makeArrayFromRange = (start: number, end: number) => {
   if (start > end) {
@@ -217,15 +226,28 @@ const getData = async (vars: { currentPage: number; itemsPerPage: number }) => {
   });
 };
 
-type Filters = UrlParams;
-type LiveFilters = Filters & { page: number };
+type Filters = UrlParams & {
+  name: string | null | undefined;
+};
+type LiveFilters = Filters & {
+  page: number;
+};
 
 // Note: these must be listed out one by one.
-const DEFAULT_FILTERS: Filters = {};
+const DEFAULT_FILTERS: Filters = {
+  name: null,
+};
+
 const DEFAULT_LIVE_FILTERS: LiveFilters = { ...DEFAULT_FILTERS, page: 1 };
 
-const UrlParamsFilteredTable: FC = () => {
-  const { query, isReady, replace } = useRouter();
+type UrlParamsFilteredTableProps = {
+  throwError?: boolean;
+};
+
+export const UrlParamsFilteredTable: FC<UrlParamsFilteredTableProps> = ({
+  throwError,
+}) => {
+  const { query, isReady, replace, asPath } = useRouter();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [areFiltersOpenMob, setAreFiltersOpenMob] = useState(false);
@@ -254,7 +276,7 @@ const UrlParamsFilteredTable: FC = () => {
       query as Record<string, string>,
       newFilters
     );
-    replace({ query: { ...newParams } });
+    void replace({ query: { ...newParams } });
   };
 
   const resetFilters = () => {
@@ -274,6 +296,7 @@ const UrlParamsFilteredTable: FC = () => {
     }
     const pageFilterParam =
       (query.page as string) || DEFAULT_LIVE_FILTERS.page.toString();
+
     // May be NaN.
     const pageFilterParamParsed = parseInt(pageFilterParam, 10);
     const page = Number.isNaN(pageFilterParamParsed)
@@ -282,6 +305,7 @@ const UrlParamsFilteredTable: FC = () => {
 
     updateLiveFilters({
       page,
+      name: (query.name as string) || null,
     });
 
     setParamsReady(true);
@@ -298,8 +322,18 @@ const UrlParamsFilteredTable: FC = () => {
       setError(null);
 
       getData({ itemsPerPage: ITEMS_PER_PAGE, currentPage: filters.page })
-        .then(setData)
-        .catch(setError)
+        .then((res) => {
+          setData(res);
+          if (throwError) {
+            throw new Error('A mock error has occurred');
+          }
+        })
+        .catch((err) => {
+          // eslint-disable-next-line no-console
+          console.error(err);
+          setError(err);
+          setData(null);
+        })
         .finally(() => setLoading(false));
     }, 150);
   }, [paramsReady, ITEMS_PER_PAGE, filters]);
@@ -307,16 +341,24 @@ const UrlParamsFilteredTable: FC = () => {
   const hasFiltersApplied = !isEqual(filters, DEFAULT_LIVE_FILTERS);
 
   if (error) {
-    return <div className="alert alert-danger">{error.message}</div>;
+    return (
+      <ErrorMessage
+        error={error}
+        prefix="Unexpected error has occurred"
+        reloadButton
+      />
+    );
   }
   if (!isReady || loading) {
-    return <div>Loading...</div>;
+    return <FullPageLoading />;
+  }
+  if (!data) {
+    throw new Error('data is null');
   }
   return (
+    // Wrap with error boundary & button to reload page.
     <div>
-      <pre className="bg-light py-2">{`QueryParams: ${JSON.stringify(
-        query
-      )}`}</pre>
+      <pre className="bg-light py-2">{`Path: ${JSON.stringify(asPath)}`}</pre>
 
       {/* Render the filters */}
       {/* Filter panel, force open on LG+ */}
@@ -337,27 +379,43 @@ const UrlParamsFilteredTable: FC = () => {
             });
             setAreFiltersOpenMob(false);
           }}
+          className="mb-4"
         >
-          <div>
-            <div className="row g-2 align-items-end flex-lg-nowrap">
-              <div className="col-12 col-lg-auto">
-                <button className="btn btn-secondary w-100" type="submit">
-                  Apply Filters
-                </button>
-              </div>
+          <div className="row g-2 align-items-end flex-lg-nowrap">
+            <div className="col-12 col-sm-3">
+              {/* @todo: False positive? */}
+              {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
+              <label htmlFor="name">Name</label>
+              <input
+                id="name"
+                type="text"
+                className="form-control"
+                value={filtersTemp.name || ''}
+                onChange={(ev) => {
+                  filtersTempDispatch({
+                    type: 'set_filters',
+                    filters: { name: ev.target.value },
+                  });
+                }}
+              />
+            </div>
+            <div className="col-12 col-lg-auto">
+              <button className="btn btn-secondary w-100" type="submit">
+                Apply Filters
+              </button>
+            </div>
 
-              <div className="col-12 col-lg-auto">
-                <div style={{ minWidth: 65 }}>
-                  {hasFiltersApplied && (
-                    <button
-                      className="btn btn-outline-danger"
-                      type="button"
-                      onClick={resetFilters}
-                    >
-                      Clear Filters
-                    </button>
-                  )}
-                </div>
+            <div className="col-12 col-lg-auto">
+              <div style={{ minWidth: 65 }}>
+                {hasFiltersApplied && (
+                  <button
+                    className="btn btn-outline-danger"
+                    type="button"
+                    onClick={resetFilters}
+                  >
+                    Clear Filters
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -392,7 +450,9 @@ const UrlParamsFilteredTable: FC = () => {
                     {[dog.ownersFirstName, dog.ownersLastName].join(' ').trim()}
                   </td>
                   <td>{dog.ownersTelephone}</td>
-                  <td>{dog.created}</td>
+                  <td>
+                    {formatDateTime(parseDateTimeFromServer(dog.created))}
+                  </td>
                 </tr>
               ))
             )}
@@ -419,9 +479,3 @@ const meta: Meta<typeof UrlParamsFilteredTable> = {
 };
 
 export default meta;
-
-export const UrlParamsFilteredTableStory: StoryObj<
-  typeof UrlParamsFilteredTable
-> = {
-  render: () => <UrlParamsFilteredTable />,
-};

@@ -70,5 +70,13 @@ module.exports = {
         accessorPairPositioning: 'getThenSet',
       },
     ],
+    // Commence custom rules (not from template)
+    'no-void': 'off',
+    // @todo: Some good rules to keep
+    // no-alert
+    // no-restricted-globals
+    // react/button-has-type)
+    // react/no-array-index-key
+    // jsx-a11y/label-has-associated-control
   },
 };
