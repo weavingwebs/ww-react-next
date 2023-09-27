@@ -5,25 +5,15 @@ import { isEqual } from 'lodash';
 import clsx from 'clsx';
 import { format } from 'date-fns';
 import { toDate } from 'date-fns-tz';
-import mockData from '../../mockData.json';
 import { ErrorMessage, FullPageLoading, FormLabel } from '../bootstrap';
+import { getData, MockDataQueryResult } from './mocks';
+import { booleanToBooleanish, makeArrayFromRange } from '../util';
 
 const parseDateTimeFromServer = (dateTimeStr: string): Date =>
   // IMPORTANT: This must use date-fns-tz to convert to local timezone.
   toDate(dateTimeStr);
-const formatDateTime = (date: Date) => format(date, 'dd-MMM-yyyy HH:mm');
 
-// @utils
-const makeArrayFromRange = (start: number, end: number) => {
-  if (start > end) {
-    throw new Error('start must be < end');
-  }
-  const res = [];
-  for (let i = start; i <= end; i++) {
-    res.push(i);
-  }
-  return res;
-};
+const formatDateTime = (date: Date) => format(date, 'dd-MMM-yyyy HH:mm');
 
 type QueryParamsPager = {
   currentPage: number;
@@ -107,16 +97,6 @@ const PaginationUsingQueryParams: FC<Props> = ({
   );
 };
 
-type Booleanish = 'true' | 'false';
-
-// const isBooleanish = (str: unknown) => str === 'true' || str === 'false';
-
-const booleanToBooleanish = (bool: boolean): Booleanish =>
-  String(bool) as Booleanish;
-
-// const booleanishToBoolean = (booleanish: Booleanish): boolean =>
-//   booleanish === 'true';
-
 type UrlParams<K extends string = string> = Record<
   K,
   string | number | boolean | null | undefined
@@ -198,26 +178,6 @@ function filtersReducer<T extends UrlParams>(s: T, a: Actions<T>): T {
 }
 
 const ITEMS_PER_PAGE = 5;
-
-type MockDataItem = (typeof mockData)[0];
-
-type MockDataQueryResult = {
-  results: MockDataItem[];
-  total: number;
-};
-
-const getData = async (vars: { currentPage: number; itemsPerPage: number }) => {
-  // @todo: Timeout.
-  const data = mockData;
-
-  const offset = (vars.currentPage - 1) * vars.itemsPerPage;
-  const page = data.slice(offset, offset + vars.itemsPerPage);
-
-  return Promise.resolve({
-    total: data.length,
-    results: page,
-  });
-};
 
 type Filters = UrlParams & {
   name: string | null | undefined;
@@ -311,12 +271,18 @@ export const UrlParamsFilteredTable: FC<UrlParamsFilteredTableProps> = ({
       setLoading(true);
       setError(null);
 
-      getData({ itemsPerPage: ITEMS_PER_PAGE, currentPage: filters.page })
+      getData({
+        paging: {
+          offset: (filters.page - 1) * ITEMS_PER_PAGE,
+          limit: ITEMS_PER_PAGE,
+        },
+        where: { name: filters.name },
+      })
         .then((res) => {
-          setData(res);
           if (throwError) {
             throw new Error('A mock error has occurred');
           }
+          setData(res);
         })
         .catch((err) => {
           // eslint-disable-next-line no-console
