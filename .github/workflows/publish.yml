@@ -30,14 +30,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}
 
-      - name: Ref Debug
-        env:
-          DEBUG: ${{ github.ref }}
-        run: |
-          echo "github.ref: '$DEBUG'"
-
       - name: Build and publish to GitHub Packages
-        if: github.ref == 'refs/tags/v*' # Only run on version tags
+        if: "startsWith(github.ref, 'refs/tags/v')" # Only run on version tags
         run: |
           yarn build
           npm login --registry=https://npm.pkg.github.com/ --scope=@weavingwebs
