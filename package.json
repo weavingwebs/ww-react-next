@@ -1,5 +1,5 @@
 {
-  "name": "ww-react",
+  "name": "@weavingwebs/ww-react",
   "publishConfig": {
     "registry": "https://npm.pkg.github.com/"
   },
