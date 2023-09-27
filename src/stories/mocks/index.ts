@@ -21,19 +21,22 @@ export type MockDataQueryVariables = {
 
 export const getData = async (vars: MockDataQueryVariables) =>
   new Promise<MockDataQueryResult>((resolve) => {
-    setTimeout(() => {
-      const data = mockData.filter((item) => {
-        if (vars.where?.name) {
-          return item.name.includes(vars.where.name);
-        }
-        return true;
-      });
-      const offset = vars.paging.offset || 0;
-      const results = data.slice(offset, offset + vars.paging.limit);
+    setTimeout(
+      () => {
+        const data = mockData.filter((item) => {
+          if (vars.where?.name) {
+            return item.name.includes(vars.where.name);
+          }
+          return true;
+        });
+        const offset = vars.paging.offset || 0;
+        const results = data.slice(offset, offset + vars.paging.limit);
 
-      resolve({
-        total: data.length,
-        results,
-      });
-    }, Math.random() * 2000);
+        resolve({
+          total: data.length,
+          results,
+        });
+      },
+      Math.random() * 500 + 50
+    );
   });

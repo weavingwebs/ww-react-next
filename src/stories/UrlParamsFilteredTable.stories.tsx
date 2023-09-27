@@ -1,13 +1,13 @@
-import { FC, useEffect, useReducer, useState } from 'react';
+import { FC, useState } from 'react';
 import { Meta } from '@storybook/react';
 import { useRouter } from 'next-router-mock';
-import { isEqual } from 'lodash';
 import clsx from 'clsx';
 import { format } from 'date-fns';
 import { toDate } from 'date-fns-tz';
 import { ErrorMessage, FullPageLoading, FormLabel } from '../bootstrap';
 import { getData, MockDataQueryResult } from './mocks';
-import { booleanToBooleanish, makeArrayFromRange } from '../util';
+import { makeArrayFromRange } from '../util';
+import { useUrlFiltersWithPager } from '../hooks/useUrlFilters';
 
 const parseDateTimeFromServer = (dateTimeStr: string): Date =>
   // IMPORTANT: This must use date-fns-tz to convert to local timezone.
@@ -97,89 +97,9 @@ const PaginationUsingQueryParams: FC<Props> = ({
   );
 };
 
-type UrlParams<K extends string = string> = Record<
-  K,
-  string | number | boolean | null | undefined
->;
-
-const constructUrlParams = (
-  currentQueryParams: Record<string, string>,
-  urlParams: UrlParams
-): Record<string, string> => {
-  // Start constructing new params object to return.
-  const finalParams: Record<string, string> = {};
-
-  // Massage our filters into a Record<string, string>.
-  const newParams: Record<string, string> = {};
-
-  Object.keys(urlParams).forEach((k) => {
-    const v = urlParams[k];
-    if (typeof v === 'undefined' || v === null) {
-      newParams[k] = '';
-      return;
-    }
-    if (typeof v === 'string') {
-      newParams[k] = v;
-      return;
-    }
-    if (typeof v === 'boolean') {
-      newParams[k] = booleanToBooleanish(v);
-      return;
-    }
-    // Number
-    // eslint-disable-next-line no-console
-    console.log('found a number, casting to', String(v));
-    newParams[k] = String(v);
-  });
-
-  // Fuse old and new params into one URLSearchParams and loop over to get rid of empty values.
-  new URLSearchParams({
-    ...(currentQueryParams as Record<string, string>),
-    ...newParams,
-  }).forEach((value, key) => {
-    // Skip empty values (empty strings).
-    if (value) {
-      finalParams[key] = value;
-    }
-  });
-
-  return finalParams;
-};
-
-// NOTE: We use UrlParams because we are not setup to handle nested states (copying, merging, etc).
-type Actions<T extends UrlParams> =
-  | {
-      filters: Partial<T>;
-      type: 'set_filters';
-    }
-  | {
-      filters: T;
-      type: 'reset';
-    };
-
-function filtersReducer<T extends UrlParams>(s: T, a: Actions<T>): T {
-  const newState = { ...s };
-  switch (a.type) {
-    case 'set_filters': {
-      return {
-        ...newState,
-        ...a.filters,
-      };
-    }
-    case 'reset': {
-      return { ...a.filters };
-    }
-    default: {
-      // eslint-disable-next-line no-console
-      console.error(a);
-      throw new Error('unhandled case');
-    }
-  }
-}
-
 const ITEMS_PER_PAGE = 5;
 
-type Filters = UrlParams & {
+type Filters = {
   name: string | null | undefined;
 };
 type LiveFilters = Filters & {
@@ -200,83 +120,43 @@ type UrlParamsFilteredTableProps = {
 export const UrlParamsFilteredTable: FC<UrlParamsFilteredTableProps> = ({
   throwError,
 }) => {
-  const { query, isReady, replace, asPath } = useRouter();
+  const { isReady, asPath } = useRouter();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
-  const [paramsReady, setParamsReady] = useState(false);
 
   const [data, setData] = useState<MockDataQueryResult | null>(null);
 
-  const [filtersTemp, filtersTempDispatch] = useReducer(
-    filtersReducer<Filters>,
-    {
-      ...DEFAULT_FILTERS,
-    }
-  );
-  const [filters, _setFiltersDispatch] = useReducer(
-    filtersReducer<LiveFilters>,
-    {
-      ...filtersTemp,
-      page: 1,
-    }
-  );
-
-  const updateLiveFilters = (newFilters: LiveFilters) => {
-    filtersTempDispatch({ type: 'set_filters', filters: { ...newFilters } });
-    _setFiltersDispatch({ type: 'set_filters', filters: { ...newFilters } });
-    const newParams = constructUrlParams(
-      query as Record<string, string>,
-      newFilters
-    );
-    void replace({ query: { ...newParams } });
-  };
-
-  const resetFilters = () => {
-    // Set temp filters
-    filtersTempDispatch({ type: 'reset', filters: { ...DEFAULT_FILTERS } });
-
-    // Set live filters & url.
-    updateLiveFilters({ ...DEFAULT_LIVE_FILTERS });
-  };
-
-  // This will not run when the URL changes (only on mount).
-  useEffect(() => {
-    if (!isReady) {
-      return;
-    }
-    const pageFilterParam =
-      (query.page as string) || DEFAULT_LIVE_FILTERS.page.toString();
-
-    // May be NaN.
-    const pageFilterParamParsed = parseInt(pageFilterParam, 10);
-    const page = Number.isNaN(pageFilterParamParsed)
-      ? DEFAULT_LIVE_FILTERS.page
-      : pageFilterParamParsed;
-
-    updateLiveFilters({
-      page,
-      name: (query.name as string) || null,
-    });
-
-    setParamsReady(true);
-  }, [isReady]);
-
-  useEffect(() => {
-    if (!paramsReady) {
-      return;
-    }
-    setLoading(true);
-
-    setTimeout(() => {
+  const {
+    updateLiveFilters,
+    updateTempFilters,
+    liveFilters,
+    filtersTemp,
+    hasFiltersApplied,
+    resetFilters,
+    itemsPerPage,
+  } = useUrlFiltersWithPager<Filters, Filters>({
+    itemsPerPage: ITEMS_PER_PAGE,
+    defaultFilters: DEFAULT_FILTERS,
+    defaultLiveFilters: DEFAULT_LIVE_FILTERS,
+    toQuery: (filters) => {
+      return {
+        name: filters.name,
+      };
+    },
+    fromQuery: (query) => {
+      return {
+        name: (query.name as string) || null,
+      };
+    },
+    onLiveFilterChange: (filters, paging): void => {
       setLoading(true);
       setError(null);
 
       getData({
-        paging: {
-          offset: (filters.page - 1) * ITEMS_PER_PAGE,
-          limit: ITEMS_PER_PAGE,
+        paging,
+        where: {
+          name: filters.name,
         },
-        where: { name: filters.name },
       })
         .then((res) => {
           if (throwError) {
@@ -291,10 +171,8 @@ export const UrlParamsFilteredTable: FC<UrlParamsFilteredTableProps> = ({
           setData(null);
         })
         .finally(() => setLoading(false));
-    }, 150);
-  }, [paramsReady, ITEMS_PER_PAGE, filters]);
-
-  const hasFiltersApplied = !isEqual(filters, DEFAULT_LIVE_FILTERS);
+    },
+  });
 
   if (error) {
     return (
@@ -321,10 +199,9 @@ export const UrlParamsFilteredTable: FC<UrlParamsFilteredTableProps> = ({
         <form
           onSubmit={(ev) => {
             ev.preventDefault();
-
             updateLiveFilters({
               ...filtersTemp,
-              page: 1,
+              page: 1, // IMPORTANT: Reset pager when changing filters.
             });
           }}
           className="mb-4"
@@ -338,10 +215,7 @@ export const UrlParamsFilteredTable: FC<UrlParamsFilteredTableProps> = ({
                 className="form-control"
                 value={filtersTemp.name || ''}
                 onChange={(ev) => {
-                  filtersTempDispatch({
-                    type: 'set_filters',
-                    filters: { name: ev.target.value },
-                  });
+                  updateTempFilters({ name: ev.target.value });
                 }}
               />
             </div>
@@ -410,10 +284,10 @@ export const UrlParamsFilteredTable: FC<UrlParamsFilteredTableProps> = ({
       {/* Render the pager */}
       <PaginationUsingQueryParams
         totalItems={data?.total || 0}
-        currentPage={filters.page}
-        itemsPerPage={ITEMS_PER_PAGE}
+        currentPage={liveFilters.page}
+        itemsPerPage={itemsPerPage}
         updatePage={({ page }) => {
-          updateLiveFilters({ ...filters, page });
+          updateLiveFilters({ page });
         }}
         className="mt-3 d-flex justify-content-center"
       />

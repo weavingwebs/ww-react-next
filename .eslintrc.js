@@ -78,5 +78,6 @@ module.exports = {
     // react/button-has-type)
     // react/no-array-index-key
     // jsx-a11y/label-has-associated-control
+    'arrow-body-style': 'off',
   },
 };
