@@ -298,13 +298,6 @@ export const UrlParamsFilteredTable: FC<UrlParamsFilteredTableProps> = ({
 const meta: Meta<typeof UrlParamsFilteredTable> = {
   title: 'Url Params Filtered Table',
   component: UrlParamsFilteredTable,
-  parameters: {
-    docs: {
-      source: {
-        type: 'code',
-      },
-    },
-  },
 };
 
 export default meta;
