@@ -1,101 +1,18 @@
 import { FC, useState } from 'react';
 import { Meta } from '@storybook/react';
 import { useRouter } from 'next-router-mock';
-import clsx from 'clsx';
 import { format } from 'date-fns';
 import { toDate } from 'date-fns-tz';
-import { ErrorMessage, FullPageLoading, FormLabel } from '../bootstrap';
+import { ErrorMessage, FormLabel, FullPageLoading } from '../bootstrap';
 import { getData, MockDataQueryResult } from './mocks';
-import { makeArrayFromRange } from '../util';
 import { useUrlFiltersWithPager } from '../hooks/useUrlFilters';
+import { Pagination } from '../bootstrap/Pagination';
 
 const parseDateTimeFromServer = (dateTimeStr: string): Date =>
   // IMPORTANT: This must use date-fns-tz to convert to local timezone.
   toDate(dateTimeStr);
 
 const formatDateTime = (date: Date) => format(date, 'dd-MMM-yyyy HH:mm');
-
-type QueryParamsPager = {
-  currentPage: number;
-  itemsPerPage: number;
-  totalItems: number;
-  updatePage: (params: { page: number }) => void;
-};
-
-type Props = QueryParamsPager & {
-  className?: string;
-};
-
-// @component, needs work.
-const PaginationUsingQueryParams: FC<Props> = ({
-  updatePage,
-  totalItems,
-  itemsPerPage,
-  currentPage,
-  className,
-}) => {
-  const goToPrevPage = () => updatePage({ page: currentPage - 1 });
-  const goToNextPage = () => updatePage({ page: currentPage + 1 });
-
-  const isFirstPage = currentPage <= 1;
-
-  const totalPagesCouldBeZero = Math.ceil(totalItems / itemsPerPage);
-  const totalPages = totalPagesCouldBeZero || 1;
-
-  const allPagesArray = makeArrayFromRange(1, totalPages);
-
-  if (allPagesArray.length === 0) {
-    throw new Error('there are no pages');
-  }
-  // @ts-expect-error: will never happen.
-  const isLastPage = currentPage >= allPagesArray.at(-1);
-
-  return (
-    <nav className={className}>
-      <ul className="pagination pagination-sm">
-        <li className={clsx('page-item', { disabled: isFirstPage })}>
-          <button
-            type="button"
-            className="page-link"
-            onClick={() => {
-              if (isFirstPage) {
-                // eslint-disable-next-line no-alert
-                alert('already on first page');
-                return;
-              }
-              goToPrevPage();
-            }}
-            title="Previous page"
-          >
-            {`<-`}
-          </button>
-        </li>
-        <li className="page-item disabled">
-          <div className="page-link text-dark font-weight-bold">
-            {`${currentPage} / ${totalPages}`}
-          </div>
-        </li>
-        <li className={clsx('page-item', { disabled: isLastPage })}>
-          <button
-            className="page-link"
-            type="button"
-            onClick={() => {
-              if (isLastPage) {
-                // eslint-disable-next-line no-alert
-                alert('already on last page');
-                return;
-              }
-              goToNextPage();
-            }}
-            disabled={isLastPage}
-          >
-            Next page {`->`}
-          </button>
-        </li>
-      </ul>
-    </nav>
-  );
-};
 
 const ITEMS_PER_PAGE = 5;
 
@@ -282,11 +199,11 @@ export const UrlParamsFilteredTable: FC<UrlParamsFilteredTableProps> = ({
       </div>
 
       {/* Render the pager */}
-      <PaginationUsingQueryParams
+      <Pagination
         totalItems={data?.total || 0}
         currentPage={liveFilters.page}
         itemsPerPage={itemsPerPage}
-        updatePage={({ page }) => {
+        onChange={(page) => {
           updateLiveFilters({ page });
         }}
         className="mt-3 d-flex justify-content-center"
@@ -296,8 +213,9 @@ export const UrlParamsFilteredTable: FC<UrlParamsFilteredTableProps> = ({
 };
 
 const meta: Meta<typeof UrlParamsFilteredTable> = {
-  title: 'Url Params Filtered Table',
+  title: 'useUrlFilters',
   component: UrlParamsFilteredTable,
+  tags: ['autodocs'],
 };
 
 export default meta;

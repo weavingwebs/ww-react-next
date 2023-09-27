@@ -3305,6 +3305,11 @@
   dependencies:
     "@babel/runtime" "^7.13.10"
 
+"@react-icons/all-files@^4.1.0":
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/@react-icons/all-files/-/all-files-4.1.0.tgz#477284873a0821928224b6fc84c62d2534d6650b"
+  integrity sha512-hxBI2UOuVaI3O/BhQfhtb4kcGn9ft12RWAFVMUeNjqqhLsHvFtzIkFaptBJpFDANTKoDfdVoHTKZDlwKCACbMQ==
+
 "@ryansonshine/commitizen@4.2.8", "@ryansonshine/commitizen@^4.2.6":
   version "4.2.8"
   resolved "https://registry.yarnpkg.com/@ryansonshine/commitizen/-/commitizen-4.2.8.tgz#18c7e1b81a2cb1cefc9c8da0b9a5c6d3bcf5ab3c"

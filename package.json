@@ -31,7 +31,10 @@
   "tsup": {
     "entry": [
       "src/index.ts",
-      "src/bootstrap/index.ts"
+      "src/bootstrap/index.ts",
+      "src/components/index.ts",
+      "src/hooks/index.ts",
+      "src/util/index.ts"
     ],
     "treeshake": true,
     "sourcemap": "inline",
@@ -48,15 +51,26 @@
     ],
     "injectStyle": false
   },
-  "types": "./dist/index.d.ts",
   "exports": {
-    ".": {
-      "require": "./dist/index.js",
-      "import": "./dist/index.mjs"
-    },
     "./bootstrap": {
       "require": "./dist/bootstrap/index.js",
-      "import": "./dist/bootstrap/index.mjs"
+      "import": "./dist/bootstrap/index.mjs",
+      "types": "./dist/bootstrap/index.d.ts"
+    },
+    "./components": {
+      "require": "./dist/components/index.js",
+      "import": "./dist/components/index.mjs",
+      "types": "./dist/components/index.d.ts"
+    },
+    "./hooks": {
+      "require": "./dist/hooks/index.js",
+      "import": "./dist/hooks/index.mjs",
+      "types": "./dist/hooks/index.d.ts"
+    },
+    "./util": {
+      "require": "./dist/util/index.js",
+      "import": "./dist/util/index.mjs",
+      "types": "./dist/util/index.d.ts"
     }
   },
   "files": [
@@ -164,5 +178,8 @@
     "trim": ">=0.0.3",
     "trim-newlines": ">=3.0.1",
     "yaml": ">=2.2.2"
+  },
+  "dependencies": {
+    "@react-icons/all-files": "^4.1.0"
   }
 }
