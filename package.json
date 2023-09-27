@@ -42,6 +42,7 @@
     "clean": true,
     "dts": true,
     "splitting": false,
+    "target": "esnext",
     "format": [
       "cjs",
       "esm"
