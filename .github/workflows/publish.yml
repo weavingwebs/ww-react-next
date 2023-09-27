@@ -34,7 +34,6 @@ jobs:
         if: "startsWith(github.ref, 'refs/tags/v')" # Only run on version tags
         run: |
           yarn build
-          npm login --registry=https://npm.pkg.github.com/ --scope=@weavingwebs
           npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
