@@ -1,5 +1,5 @@
 import { NextRouter } from 'next/router';
-import { useEffect, useReducer, useState } from 'react';
+import { useEffect, useMemo, useReducer, useState } from 'react';
 import isEqual from 'lodash/isEqual';
 import { ParsedUrlQueryInput } from 'node:querystring';
 
@@ -45,7 +45,6 @@ type UseUrlFiltersInput<F extends {}, L extends F> = {
   defaultFilters: F;
   defaultLiveFilters: L;
   fromQuery: (params: UrlParams) => L;
-  onLiveFilterChange: (filters: L) => void;
   router: NextRouter;
   toQuery: (filters: L) => UrlParams;
 };
@@ -56,10 +55,9 @@ export function useUrlFilters<F extends {}, L extends F>({
   fromQuery,
   toQuery,
   router,
-  onLiveFilterChange,
 }: UseUrlFiltersInput<F, L>) {
   const { query, isReady, replace } = router;
-  const [paramsReady, setParamsReady] = useState(false);
+  const [filtersReady, setFiltersReady] = useState(false);
 
   const [filtersTemp, filtersTempDispatch] = useReducer(filtersReducer<F>, {
     ...defaultFilters,
@@ -102,20 +100,16 @@ export function useUrlFilters<F extends {}, L extends F>({
       return;
     }
     updateLiveFilters(fromQuery(query));
-
-    setParamsReady(true);
+    setFiltersReady(true);
   }, [isReady]);
 
-  useEffect(() => {
-    if (!paramsReady) {
-      return;
-    }
-    onLiveFilterChange(filters);
-  }, [paramsReady, filters]);
-
-  const hasFiltersApplied = !isEqual(filters, defaultLiveFilters);
+  const hasFiltersApplied = useMemo(
+    () => !isEqual(filters, defaultLiveFilters),
+    [filters, defaultLiveFilters]
+  );
 
   return {
+    filtersReady,
     hasFiltersApplied,
     resetFilters,
     filtersTemp,
@@ -125,29 +119,27 @@ export function useUrlFilters<F extends {}, L extends F>({
   };
 }
 
-type FiltersWithPager<F extends {}> = F & { page: number };
+type FiltersWithPage<F extends {}> = F & { page: number };
 
-type UseUrlFiltersWithPagerInput<F extends {}, L extends F> = Omit<
-  UseUrlFiltersInput<F, L>,
-  'onLiveFilterChange'
+type UseUrlFiltersWithPageInput<F extends {}, L extends F> = UseUrlFiltersInput<
+  F,
+  L
 > & {
   itemsPerPage: number;
-  onLiveFilterChange: (filters: L, paging: PagingInput) => void;
 };
 
-export function useUrlFiltersWithPager<F extends {}, L extends F>({
+export function useUrlFiltersWithPage<F extends {}, L extends F>({
   itemsPerPage,
-  onLiveFilterChange,
   fromQuery,
   toQuery,
   ...input
-}: UseUrlFiltersWithPagerInput<F, L>) {
+}: UseUrlFiltersWithPageInput<F, L>) {
   const defaultLiveFilters = {
     page: 1,
     ...input.defaultLiveFilters,
   };
 
-  const res = useUrlFilters<F, FiltersWithPager<L>>({
+  const res = useUrlFilters<F, FiltersWithPage<L>>({
     ...input,
     defaultLiveFilters,
     fromQuery: (query) => {
@@ -169,14 +161,18 @@ export function useUrlFiltersWithPager<F extends {}, L extends F>({
       ...toQuery(filters),
       page: String(filters.page),
     }),
-    onLiveFilterChange: (filters) =>
-      onLiveFilterChange(filters, {
-        offset: (filters.page - 1) * itemsPerPage,
-        limit: itemsPerPage,
-      }),
   });
+
+  const paging = useMemo<PagingInput>(() => {
+    return {
+      limit: itemsPerPage,
+      offset: (res.liveFilters.page - 1) * itemsPerPage,
+    };
+  }, [res.liveFilters.page, itemsPerPage]);
+
   return {
     ...res,
     itemsPerPage,
+    paging,
   };
 }

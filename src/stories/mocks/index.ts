@@ -25,7 +25,9 @@ export const getData = async (vars: MockDataQueryVariables) =>
       () => {
         const data = mockData.filter((item) => {
           if (vars.where?.name) {
-            return item.name.includes(vars.where.name);
+            return item.name
+              .toLocaleLowerCase()
+              .includes(vars.where.name.trim().toLocaleLowerCase());
           }
           return true;
         });

@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useMemo } from 'react';
 
 export interface PagerState {
   currentPage: number;
@@ -59,7 +60,7 @@ const pagerReducer = (state: PagerState, action: PagerActions): PagerState => {
       break;
 
     case 'reset':
-      newState.currentPage = 0;
+      newState.currentPage = 1;
       break;
 
     case 'updateCurrentPage':
@@ -68,7 +69,7 @@ const pagerReducer = (state: PagerState, action: PagerActions): PagerState => {
 
     case 'updateItemsPerPage':
       newState.itemsPerPage = action.itemsPerPage;
-      newState.currentPage = 0;
+      newState.currentPage = 1;
       break;
 
     default: {
@@ -77,23 +78,40 @@ const pagerReducer = (state: PagerState, action: PagerActions): PagerState => {
   }
 
   newState.isLastPage =
-    (newState.currentPage + 1) * newState.itemsPerPage >= newState.total;
+    newState.currentPage * newState.itemsPerPage >= newState.total;
   return newState;
 };
 
-export const usePager = (itemsPerPageDefault: number) => {
+export const usePager = (
+  itemsPerPageDefault: number,
+  initialTotal: number = 0
+) => {
   const [state, dispatch] = React.useReducer(pagerReducer, {
     itemsPerPage: itemsPerPageDefault,
-    total: 0,
-    currentPage: 0,
+    total: initialTotal,
+    currentPage: 1,
     isLastPage: false,
   });
   const { total, currentPage, isLastPage, itemsPerPage } = state;
+
+  const paging = useMemo(() => {
+    return {
+      limit: itemsPerPage,
+      offset: (currentPage - 1) * itemsPerPage,
+    };
+  }, [currentPage, itemsPerPage]);
+
+  const totalPages = useMemo(() => {
+    return Math.ceil(total / itemsPerPage);
+  }, [total, itemsPerPage]);
+
   return {
     total,
+    totalPages,
     currentPage,
     isLastPage,
     itemsPerPage,
     dispatch,
+    paging,
   };
 };

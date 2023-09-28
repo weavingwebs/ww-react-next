@@ -1,17 +1,13 @@
-import { FC, useState } from 'react';
+import { FC, useEffect, useState } from 'react';
 import { Meta } from '@storybook/react';
 import { useRouter } from 'next-router-mock';
 import { format } from 'date-fns';
 import { toDate } from 'date-fns-tz';
 import { MemoryRouterProvider } from 'next-router-mock/MemoryRouterProvider/next-13.5';
-import {
-  ErrorMessage,
-  FormLabel,
-  FullPageLoading,
-  Pagination,
-} from '../bootstrap';
-import { getData, MockDataQueryResult } from './mocks';
-import { useUrlFiltersWithPager } from '../hooks';
+import { FormLabel, FullPageLoading, Pagination } from '../../bootstrap';
+import { getData, MockDataQueryResult } from '../mocks';
+import { useUrlFiltersWithPage } from '../../hooks';
+import { TableResultsWithPlaceholder } from '../../bootstrap/TableResultsWithPlaceholder';
 
 const parseDateTimeFromServer = (dateTimeStr: string): Date =>
   // IMPORTANT: This must use date-fns-tz to convert to local timezone.
@@ -39,17 +35,19 @@ type UrlParamsFilteredTableProps = {
   throwError?: boolean;
 };
 
-export const UrlParamsFilteredTable: FC<UrlParamsFilteredTableProps> = ({
+export const FullExampleWithPaging: FC<UrlParamsFilteredTableProps> = ({
   throwError,
 }) => {
   const router = useRouter();
   const { isReady, asPath } = router;
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
   const [data, setData] = useState<MockDataQueryResult | null>(null);
 
   const {
+    filtersReady,
+    paging,
     updateLiveFilters,
     updateTempFilters,
     liveFilters,
@@ -57,7 +55,7 @@ export const UrlParamsFilteredTable: FC<UrlParamsFilteredTableProps> = ({
     hasFiltersApplied,
     resetFilters,
     itemsPerPage,
-  } = useUrlFiltersWithPager<Filters, Filters>({
+  } = useUrlFiltersWithPage<Filters, Filters>({
     router,
     itemsPerPage: ITEMS_PER_PAGE,
     defaultFilters: DEFAULT_FILTERS,
@@ -72,53 +70,49 @@ export const UrlParamsFilteredTable: FC<UrlParamsFilteredTableProps> = ({
         name: (query.name as string) || null,
       };
     },
-    onLiveFilterChange: (filters, paging): void => {
-      setLoading(true);
-      setError(null);
-
-      getData({
-        paging,
-        where: {
-          name: filters.name,
-        },
-      })
-        .then((res) => {
-          if (throwError) {
-            throw new Error('A mock error has occurred');
-          }
-          setData(res);
-        })
-        .catch((err) => {
-          // eslint-disable-next-line no-console
-          console.error(err);
-          setError(err);
-          setData(null);
-        })
-        .finally(() => setLoading(false));
-    },
   });
 
-  if (error) {
-    return (
-      <ErrorMessage
-        error={error}
-        prefix="Unexpected error has occurred"
-        reloadButton
-      />
-    );
-  }
-  if (!isReady || loading) {
+  // Run the query when the filters change.
+  useEffect(() => {
+    // Important: Only run the query when the filters are ready, if we run too
+    // early then the url params will not have been parsed yet.
+    if (!filtersReady) {
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    getData({
+      paging,
+      where: {
+        name: liveFilters.name,
+      },
+    })
+      .then((res) => {
+        if (throwError) {
+          throw new Error('A mock error has occurred');
+        }
+        setData(res);
+      })
+      .catch((err) => {
+        // eslint-disable-next-line no-console
+        console.error(err);
+        setError(err);
+        setData(null);
+      })
+      .finally(() => setIsLoading(false));
+  }, [filtersReady, liveFilters, paging, throwError]);
+
+  if (!isReady || !filtersReady) {
     return <FullPageLoading />;
   }
-  if (!data) {
-    throw new Error('data is null');
-  }
   return (
-    // Wrap with error boundary & button to reload page.
     <div>
+      {/* Render the current URL for demo purposes */}
       <pre className="bg-light py-2">{asPath}</pre>
 
-      {/* Render the filters */}
+      {/* Filters */}
       <div>
         <form
           onSubmit={(ev) => {
@@ -167,7 +161,7 @@ export const UrlParamsFilteredTable: FC<UrlParamsFilteredTableProps> = ({
         </form>
       </div>
 
-      {/* Render the table */}
+      {/* Results */}
       <div className="table-responsive">
         <table className="table">
           <thead>
@@ -182,12 +176,14 @@ export const UrlParamsFilteredTable: FC<UrlParamsFilteredTableProps> = ({
             </tr>
           </thead>
           <tbody>
-            {!data || data.total === 0 || data.results.length === 0 ? (
-              <tr>
-                <td colSpan={6}>No data found.</td>
-              </tr>
-            ) : (
-              data.results.map((person) => (
+            <TableResultsWithPlaceholder
+              columnCount={7}
+              error={error}
+              errorPrefix="Failed to get results"
+              placeholderRowCount={itemsPerPage}
+              isLoading={isLoading}
+              results={data?.results}
+              renderRow={(person) => (
                 <tr key={person.id}>
                   <td>{person.name}</td>
                   <td>{person.age}</td>
@@ -199,13 +195,13 @@ export const UrlParamsFilteredTable: FC<UrlParamsFilteredTableProps> = ({
                     {formatDateTime(parseDateTimeFromServer(person.registered))}
                   </td>
                 </tr>
-              ))
-            )}
+              )}
+            />
           </tbody>
         </table>
       </div>
 
-      {/* Render the pager */}
+      {/* Pager */}
       <Pagination
         totalItems={data?.total || 0}
         currentPage={liveFilters.page}
@@ -219,10 +215,9 @@ export const UrlParamsFilteredTable: FC<UrlParamsFilteredTableProps> = ({
   );
 };
 
-const meta: Meta<typeof UrlParamsFilteredTable> = {
-  title: 'useUrlFilters',
-  component: UrlParamsFilteredTable,
-  tags: ['autodocs'],
+const meta: Meta<typeof FullExampleWithPaging> = {
+  title: 'Hooks/useUrlFilters',
+  component: FullExampleWithPaging,
   decorators: [
     // Make next/link work.
     (Story) => (

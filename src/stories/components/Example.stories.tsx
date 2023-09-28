@@ -1,9 +1,9 @@
 import React from 'react';
 import { Meta, StoryFn } from '@storybook/react';
-import { Example } from '../components';
+import { Example } from '../../components';
 
 export default {
-  title: 'Example',
+  title: 'Components/Example',
   component: Example,
   argTypes: {},
   tags: ['autodocs'],

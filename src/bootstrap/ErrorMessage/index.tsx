@@ -1,5 +1,6 @@
 import clsx from 'clsx';
 import { FC } from 'react';
+import { FaExclamationTriangle } from 'react-icons/fa';
 
 type ErrorMessageProps = {
   className?: string;
@@ -20,12 +21,11 @@ export const ErrorMessage: FC<ErrorMessageProps> = ({
   if (!error) {
     return null;
   }
-  const errorMessage = prefix
-    ? `${prefix} (Error: ${error.message})`
-    : error.message;
+  const errorMessage = prefix ? `${prefix}: ${error.message}` : error.message;
 
   return (
     <div className={clsx('alert alert-danger', className)}>
+      <FaExclamationTriangle className="me-2" />
       {errorMessage}
       {reloadButton && (
         <div className="mt-2">

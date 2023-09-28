@@ -1,0 +1,94 @@
+import { Meta, Title } from '@storybook/blocks';
+import UseUrlFiltersStories from './useUrlFilters.stories';
+
+<Meta of={UseUrlFiltersStories} />
+<Title>useUrlFilters</Title>
+
+## Usage
+
+```tsx
+const router = useRouter();
+const {
+  filtersReady,
+  updateLiveFilters,
+  updateTempFilters,
+  liveFilters,
+  filtersTemp,
+  hasFiltersApplied,
+  resetFilters,
+  itemsPerPage,
+} = useUrlFilters<Filters, LiveFilters>({
+  router,
+  defaultFilters: DEFAULT_FILTERS,
+  defaultLiveFilters: DEFAULT_LIVE_FILTERS,
+  toQuery: (filters) => {
+    return {
+      name: filters.name,
+    };
+  },
+  fromQuery: (query) => {
+    return {
+      name: (query.name as string) || null,
+    };
+  },
+});
+
+useEffect(() => {
+  // Important: Only run the query when the filters are ready, if we run too
+  // early then the url params will not have been parsed yet.
+  if (!filtersReady) {
+    return;
+  }
+
+  // Run the query.
+  runQuery({
+    variables: {
+      filters: liveFilters,
+    },
+  });
+}, [filtersReady, liveFilters]);
+```
+
+See [Url Params Filtered Table](?path=/story/hooks-useurlfilters--full-example-with-paging) for an example of `useUrlFiltersWithPage`.
+
+## Live vs Temp Filters
+
+The `useUrlFilters` & `useUrlFiltersWithPage` hooks have two sets of filters:
+
+### `filtersTemp`/`updateTempFilters`
+
+These are the current values of the filters form and may not necessarily reflect
+the current filters (and thus the current URL) until the user submits the form.
+
+```tsx
+<input
+  id="name"
+  type="text"
+  className="form-control"
+  value={filtersTemp.name || ''}
+  onChange={(ev) => {
+    updateTempFilters({ name: ev.target.value });
+  }}
+/>
+```
+
+### `liveFilters`/`updateLiveFilters`
+
+These are the currently applied filters and will be reflected in the URL.
+They should be updated from `filtersTemp` when the user submits the form.
+
+Note that some filters may be excluded from filtersTemp & only present in
+liveFilters. This is useful for parameters such as 'page' which should be
+applied instantly and reset when the user changes the filters form.
+
+```tsx
+<form
+  onSubmit={(ev) => {
+    ev.preventDefault();
+    updateLiveFilters({
+      ...filtersTemp,
+      page: 1,
+    });
+  }}
+>
+```
