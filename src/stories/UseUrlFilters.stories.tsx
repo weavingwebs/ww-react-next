@@ -3,10 +3,15 @@ import { Meta } from '@storybook/react';
 import { useRouter } from 'next-router-mock';
 import { format } from 'date-fns';
 import { toDate } from 'date-fns-tz';
-import { ErrorMessage, FormLabel, FullPageLoading } from '../bootstrap';
+import { MemoryRouterProvider } from 'next-router-mock/MemoryRouterProvider/next-13.5';
+import {
+  ErrorMessage,
+  FormLabel,
+  FullPageLoading,
+  Pagination,
+} from '../bootstrap';
 import { getData, MockDataQueryResult } from './mocks';
-import { useUrlFiltersWithPager } from '../hooks/useUrlFilters';
-import { Pagination } from '../bootstrap/Pagination';
+import { useUrlFiltersWithPager } from '../hooks';
 
 const parseDateTimeFromServer = (dateTimeStr: string): Date =>
   // IMPORTANT: This must use date-fns-tz to convert to local timezone.
@@ -37,7 +42,8 @@ type UrlParamsFilteredTableProps = {
 export const UrlParamsFilteredTable: FC<UrlParamsFilteredTableProps> = ({
   throwError,
 }) => {
-  const { isReady, asPath } = useRouter();
+  const router = useRouter();
+  const { isReady, asPath } = router;
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -52,6 +58,7 @@ export const UrlParamsFilteredTable: FC<UrlParamsFilteredTableProps> = ({
     resetFilters,
     itemsPerPage,
   } = useUrlFiltersWithPager<Filters, Filters>({
+    router,
     itemsPerPage: ITEMS_PER_PAGE,
     defaultFilters: DEFAULT_FILTERS,
     defaultLiveFilters: DEFAULT_LIVE_FILTERS,
@@ -216,6 +223,14 @@ const meta: Meta<typeof UrlParamsFilteredTable> = {
   title: 'useUrlFilters',
   component: UrlParamsFilteredTable,
   tags: ['autodocs'],
+  decorators: [
+    // Make next/link work.
+    (Story) => (
+      <MemoryRouterProvider>
+        <Story />
+      </MemoryRouterProvider>
+    ),
+  ],
 };
 
 export default meta;

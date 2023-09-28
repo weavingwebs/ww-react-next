@@ -1,7 +1,6 @@
 import { FC, ReactNode } from 'react';
 import clsx from 'clsx';
-import { FaArrowLeft } from '@react-icons/all-files/fa/FaArrowLeft';
-import { FaArrowRight } from '@react-icons/all-files/fa/FaArrowRight';
+import { FaArrowLeft, FaArrowRight } from 'react-icons/fa';
 
 type Props = {
   className?: string;

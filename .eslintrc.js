@@ -72,6 +72,14 @@ module.exports = {
     ],
     // Commence custom rules (not from template)
     'no-void': 'off',
+    'no-restricted-imports': [
+      'error',
+      {
+        // Do not allow full lodash import, only allow specific functions
+        // i.e. import isEqual from 'lodash/isEqual'.
+        paths: ['lodash'],
+      },
+    ],
     // @todo: Some good rules to keep
     // no-alert
     // no-restricted-globals

@@ -1,14 +1,14 @@
-import { useRouter } from 'next-router-mock';
+import { NextRouter } from 'next/router';
 import { useEffect, useReducer, useState } from 'react';
-import { isEqual } from 'lodash';
+import isEqual from 'lodash/isEqual';
+import { ParsedUrlQueryInput } from 'node:querystring';
 
 type PagingInput = {
   limit: number;
   offset?: number | null;
 };
 
-type UrlParam = string | null | undefined;
-type UrlParams = Record<string, UrlParam | UrlParam[]>;
+type UrlParams = ParsedUrlQueryInput;
 
 // NOTE: We use UrlParams because we are not setup to handle nested states (copying, merging, etc).
 type Actions<F extends {}> =
@@ -46,6 +46,7 @@ type UseUrlFiltersInput<F extends {}, L extends F> = {
   defaultLiveFilters: L;
   fromQuery: (params: UrlParams) => L;
   onLiveFilterChange: (filters: L) => void;
+  router: NextRouter;
   toQuery: (filters: L) => UrlParams;
 };
 
@@ -54,9 +55,10 @@ export function useUrlFilters<F extends {}, L extends F>({
   defaultLiveFilters,
   fromQuery,
   toQuery,
+  router,
   onLiveFilterChange,
 }: UseUrlFiltersInput<F, L>) {
-  const { query, isReady, replace } = useRouter();
+  const { query, isReady, replace } = router;
   const [paramsReady, setParamsReady] = useState(false);
 
   const [filtersTemp, filtersTempDispatch] = useReducer(filtersReducer<F>, {

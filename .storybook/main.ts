@@ -15,5 +15,17 @@ const config: StorybookConfig = {
   docs: {
     autodocs: 'tag',
   },
+  webpackFinal: async (config, { configType }) => {
+    if (!config.resolve) {
+      config.resolve = {
+        alias: {},
+      };
+    }
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      'next/router': 'next-router-mock',
+    };
+    return config;
+  },
 };
 export default config;
