@@ -3,6 +3,18 @@ import { FC } from 'react';
 import { date, mixed, number, object, ObjectSchema, string } from 'yup';
 import { FormProvider, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
+import { HookFormInput } from '../../components/HookFormInput';
+import { parse } from 'date-fns';
+import {Button} from "../../bootstrap/Button";
+
+const fragmentToValues = (fragment: MyFragment): FormValues => ({
+  age: fragment.age,
+  company: fragment.company,
+  name: fragment.name,
+  dateOfBirth: parse(fragment.dateOfBirth, 'yyyy-mm-dd', new Date()),
+  gender: fragment.gender,
+  phone: fragment.phone,
+});
 
 type MyFragment = {
   age: number;
@@ -31,19 +43,44 @@ const validationSchema: ObjectSchema<FormValues> = object({
   company: string().label('Company').required().max(128),
   dateOfBirth: date().label('Date of birth').required(),
   gender: mixed<'male' | 'female' | 'other'>().label('Gender').required(),
-  name: string().label('Name').required(),
+  name: string().label('Name').required().max(3),
   phone: string().label('Phone number').required(),
 });
 
 type CreateUpdateFormProps = {
-  //
+  myFragment: MyFragment | null;
 };
 
-export const CreateUpdateForm: FC<CreateUpdateFormProps> = () => {
-  const formMethods = useForm({ resolver: yupResolver(validationSchema) });
+export const CreateUpdateForm: FC<CreateUpdateFormProps> = ({ myFragment }) => {
+  const formMethods = useForm({
+    resolver: yupResolver(validationSchema),
+    defaultValues: myFragment ? fragmentToValues(myFragment) : {},
+  });
+
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = formMethods;
+
   return (
     <FormProvider {...formMethods}>
-      <div>CreateUpdateForm</div>
+      <form
+        onSubmit={handleSubmit((values) => {
+          console.log({ values });
+        })}
+      >
+        <HookFormInput<FormValues>
+          control={control}
+          name="name"
+          label="Name"
+          helpText="Just some help text."
+          inputClassName="form-control"
+          className="mb-3"
+        />
+
+        <Button variant="primary" type="submit">Submit</Button>
+      </form>
     </FormProvider>
   );
 };

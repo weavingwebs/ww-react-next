@@ -1,4 +1,4 @@
-import { CSSProperties, FC, JSX, PropsWithChildren } from 'react';
+import { CSSProperties, FC, JSX, PropsWithChildren, ReactNode } from 'react';
 import clsx from 'clsx';
 
 const RequiredIndicator: FC = () => (
@@ -18,9 +18,9 @@ type FormLabelPropsLabel = {
 
 type FormLabelProps = PropsWithChildren &
   (FormLabelPropsLegend | FormLabelPropsLabel) & {
-    className?: string;
     required?: boolean;
     style?: CSSProperties;
+    className?: string;
   };
 
 export const FormLabel: FC<FormLabelProps> = ({
@@ -31,7 +31,7 @@ export const FormLabel: FC<FormLabelProps> = ({
   ...asProps
 }) => {
   const { as, ...componentProps } = asProps;
-  let Component: keyof JSX.IntrinsicElements = 'label';
+  let Component: keyof JSX.IntrinsicElements;
 
   switch (as) {
     case 'legend': {
