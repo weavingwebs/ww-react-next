@@ -32,10 +32,12 @@ type FormValues = Omit<
 };
 
 // Convert the real values to the form values.
-const fragmentToValues = async (
-  fragment: CustomerFragment,
-  errorOnInvalidValue: boolean
-): Promise<FormValues> => {
+const fragmentToValues = async (args: {
+  errorOnInvalidValue?: boolean;
+  fragment: CustomerFragment;
+}): Promise<FormValues> => {
+  const { fragment, errorOnInvalidValue } = args;
+
   let dateOfBirth: Date | null = null;
 
   if (fragment.dateOfBirth) {
@@ -148,14 +150,17 @@ export const CreateUpdateForm: FC<CreateUpdateFormProps> = ({
     resolver: yupResolver(validationSchema),
     defaultValues: customer
       ? async () =>
-          fragmentToValues(customer, true).catch((err) => {
+          fragmentToValues({
+            fragment: customer,
+            errorOnInvalidValue: true,
+          }).catch((err) => {
             setLoadError(
               new Error(
                 'There were problems with loading some initial values',
                 { cause: err }
               )
             );
-            return fragmentToValues(customer, false);
+            return fragmentToValues({ fragment: customer });
           })
       : {
           ...initialValues,
@@ -177,24 +182,25 @@ export const CreateUpdateForm: FC<CreateUpdateFormProps> = ({
 
           try {
             const res = await onSubmit(valuesToInput(values));
-            const newFormValues = await fragmentToValues(res, true).catch(
-              (err) => {
-                setSubmitError(
-                  new Error(
-                    'Saved values to server but failed to replace form state',
-                    {
-                      cause: err,
-                    }
-                  )
-                );
-              }
-            );
+            const newFormValues = await fragmentToValues({
+              fragment: res,
+              errorOnInvalidValue: true,
+            }).catch((err) => {
+              setSubmitError(
+                new Error(
+                  'Saved values to server but failed to replace form state',
+                  {
+                    cause: err,
+                  }
+                )
+              );
+            });
 
             if (newFormValues) {
               reset(newFormValues);
+              // Now clear the load error as it's no longer relevant.
+              setLoadError(null);
             }
-
-            setLoadError(null);
           } catch (err) {
             setSubmitError(new Error('Failed to save values', { cause: err }));
           }
@@ -230,7 +236,6 @@ export const CreateUpdateForm: FC<CreateUpdateFormProps> = ({
         />
 
         <HookFormDateInput<FormValues>
-          type="date"
           name="dateOfBirth"
           label="Date of Birth"
           inputClassName="form-control"
