@@ -28,7 +28,10 @@ module.exports = {
     'sort-class-members',
   ],
   rules: {
-    '@typescript-eslint/no-unused-vars': 'error',
+    '@typescript-eslint/no-unused-vars': [
+      'error',
+      { ignoreRestSiblings: true },
+    ],
     'import/extensions': 'off',
     'import/no-extraneous-dependencies': 'off',
     'import/no-unresolved': 'off',
@@ -46,7 +49,7 @@ module.exports = {
     'react/react-in-jsx-scope': 'off',
     'typescript-sort-keys/interface': 'error',
     'typescript-sort-keys/string-enum': 'error',
-    'unused-imports/no-unused-imports': 'error',
+    'unused-imports/no-unused-imports': ['error', { ignoreRestSiblings: true }],
     'prefer-arrow/prefer-arrow-functions': [
       'error',
       {

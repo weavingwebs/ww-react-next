@@ -1,4 +1,10 @@
-import { Control, FieldValues, Path, useController } from 'react-hook-form';
+import {
+  Control,
+  FieldValues,
+  Path,
+  useController,
+  useFormContext,
+} from 'react-hook-form';
 import {
   CSSProperties,
   HTMLInputTypeAttribute,
@@ -13,30 +19,31 @@ import { FormText } from '../../bootstrap/FormText';
 
 type FormInputPropsSelect = {
   as: 'select';
-  children: ReactNode;
   autoComplete?: string;
+  children: ReactNode;
 };
 
 type FormInputPropsTextarea = {
   as: 'textarea';
-  rows?: number;
-  placeholder?: string;
-  readOnly?: boolean;
-  spellCheck?: 'true' | 'false';
-  autoCorrect?: 'on' | 'off';
   autoCapitalize?: string;
   autoComplete?: string;
+  autoCorrect?: 'on' | 'off';
+  placeholder?: string;
+  readOnly?: boolean;
+  rows?: number;
+  spellCheck?: 'true' | 'false';
 };
 
 type FormInputPropsInput = {
-  as?: undefined;
-  type?: HTMLInputTypeAttribute;
+  as?: undefined | 'input';
+  autoCapitalize?: string;
+  autoComplete?: string;
+  autoCorrect?: 'on' | 'off';
   placeholder?: string;
   readOnly?: boolean;
   spellCheck?: 'true' | 'false';
-  autoCorrect?: 'on' | 'off';
-  autoCapitalize?: string;
-  autoComplete?: string;
+  // NOTE: checkboxes/radios should not use this component.
+  type: Exclude<HTMLInputTypeAttribute, 'checkbox' | 'radio'>;
 };
 
 type FormInputProps<T extends FieldValues> = (
@@ -44,33 +51,46 @@ type FormInputProps<T extends FieldValues> = (
   | FormInputPropsTextarea
   | FormInputPropsInput
 ) & {
-  control: Control<T>;
+  autoFocus?: boolean;
+  className?: string;
+  control?: Control<T>;
+  disabled?: boolean;
+  helpText?: string;
+  inputClassName?: string;
+  inputPrependText?: string;
+  label?: ReactNode;
+  labelClassName?: string;
+  max?: string | number;
+  min?: string | number;
   name: Path<T>;
   required?: boolean;
-  disabled?: boolean;
-  autoFocus?: boolean;
-  label?: ReactNode;
-  className?: string;
-  inputClassName?: string;
-  helpText?: string;
   style?: CSSProperties;
-  min?: string | number;
-  max?: string | number;
-  inputPrependText?: string;
 };
 
 export function HookFormInput<T extends FieldValues>({
   name,
-  control,
+  control: _control,
   required,
   label,
   className,
   inputClassName,
+  labelClassName,
   helpText,
   style,
   inputPrependText,
   ...asProps
 }: FormInputProps<T>): ReactElement | null {
+  const formContext = useFormContext<T>();
+  let control = _control;
+  if (!_control) {
+    if (!formContext) {
+      throw new Error(
+        'You must either set the control prop or wrap this component with a FormProvider'
+      );
+    }
+    control = formContext.control;
+  }
+
   const {
     field,
     fieldState: { error },
@@ -82,9 +102,8 @@ export function HookFormInput<T extends FieldValues>({
     },
   });
 
-  const { as, ...inputProps } = asProps;
-  let Component: keyof JSX.IntrinsicElements = 'input';
-  switch (as) {
+  let Component: keyof JSX.IntrinsicElements;
+  switch (asProps.as) {
     case 'select': {
       Component = 'select';
       break;
@@ -93,12 +112,20 @@ export function HookFormInput<T extends FieldValues>({
       Component = 'textarea';
       break;
     }
+    default: {
+      Component = 'input';
+    }
   }
+  const { as, ...inputProps } = asProps;
 
   return (
     <div className={clsx(className, 'has-validation')} aria-live="polite">
       {label && (
-        <FormLabel htmlFor={name} required={required}>
+        <FormLabel
+          htmlFor={name}
+          required={required}
+          className={clsx(labelClassName)}
+        >
           {label}
         </FormLabel>
       )}
@@ -109,8 +136,9 @@ export function HookFormInput<T extends FieldValues>({
         <Component
           {...inputProps}
           {...field}
+          value={typeof field.value === 'undefined' ? '' : field.value}
           onBlur={(ev) => {
-            const value = ev.target.value;
+            const { value } = ev.target;
             field.onChange(value.trim());
             field.onBlur();
           }}

@@ -42,3 +42,21 @@ export const getData = async (vars: MockDataQueryVariables) =>
       Math.random() * 500 + 50
     );
   });
+
+export type CustomerFragment = {
+  age: number;
+  archived: boolean;
+  company: string;
+  // yyyy-mm-dd format.
+  dateOfBirth: string;
+  // An enum.
+  gender: 'male' | 'female' | 'other';
+  // GUID assigned by the server.
+  id: string;
+  name: string;
+  phone: string;
+  // Server timestamps on during creation.
+  registered: string;
+};
+
+export type CustomerInput = Omit<CustomerFragment, 'id' | 'registered'>;
