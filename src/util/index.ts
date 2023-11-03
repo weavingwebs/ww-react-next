@@ -18,3 +18,5 @@ export const booleanToBooleanish = (bool: boolean): Booleanish =>
 
 export const booleanishToBoolean = (booleanish: Booleanish): boolean =>
   booleanish === 'true';
+
+export const isAbsoluteUrl = (url: string) => /^(https?:)?\/\//m.test(url);

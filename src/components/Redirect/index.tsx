@@ -12,7 +12,6 @@ export const Redirect: FC<{
       return;
     }
     void push(href);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isReady, href]);
 
   return <FullPageLoading />;
