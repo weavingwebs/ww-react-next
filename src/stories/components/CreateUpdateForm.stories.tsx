@@ -26,7 +26,7 @@ type FormValues = Omit<
   'dateOfBirth' | 'archived' | 'age' | 'gender'
 > & {
   age: number | null;
-  archived?: boolean | null;
+  archived: boolean;
   dateOfBirth: Date | null;
   gender: GenderEnumType | '';
 };
@@ -48,6 +48,14 @@ const fragmentToValues = async (args: {
         `failed to parse dateOfBirth from '${fragment.dateOfBirth}'`
       );
     }
+  }
+
+  // For boolean, it's probably best to err on the side of caution.
+  // Otherwise, we might end up being blocked from submitting silently.
+  if (errorOnInvalidValue && typeof fragment.archived !== 'boolean') {
+    throw new Error(
+      `archived is of invalid type: ${typeof fragment.archived}, expecting: boolean`
+    );
   }
   return {
     age: fragment.age,
@@ -78,7 +86,7 @@ const valuesToInput = (values: FormValues): CustomerInput => {
     dateOfBirth: format(values.dateOfBirth, 'yyyy-MM-dd'),
     gender: values.gender,
     phone: values.phone,
-    archived: !!values.archived,
+    archived: values.archived,
   };
 };
 
@@ -119,7 +127,8 @@ const validationSchema: ObjectSchema<FormValues> = object({
     .required(),
   name: string().label('Name').required().max(128),
   phone: string().label('Phone number').required(),
-  archived: boolean().label('Archived').nullable(),
+  // If not defined in initial values, it will block submit without warning.
+  archived: boolean().label('Archived').required(),
 });
 
 const initialValues: FormValues = {
@@ -128,7 +137,7 @@ const initialValues: FormValues = {
   gender: '',
   company: '',
   age: null,
-  archived: null,
+  archived: false,
   dateOfBirth: null,
 };
 

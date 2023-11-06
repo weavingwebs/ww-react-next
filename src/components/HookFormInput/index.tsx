@@ -136,7 +136,11 @@ export function HookFormInput<T extends FieldValues>({
         <Component
           {...inputProps}
           {...field}
-          value={typeof field.value === 'undefined' ? '' : field.value}
+          value={
+            typeof field.value === 'undefined' || field.value === null
+              ? ''
+              : field.value
+          }
           onBlur={(ev) => {
             const { value } = ev.target;
             field.onChange(value.trim());
