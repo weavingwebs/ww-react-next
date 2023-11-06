@@ -5,23 +5,21 @@ import { Controller, FormProvider, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Button } from '../../bootstrap/Button';
 import { FormLabel } from '../../bootstrap';
-import {
-  MOCK_OPTIONS,
-  SearchableSelect,
-} from '../../components/SearchableSelect';
+import { SearchableSelect } from '../../components/SearchableSelect';
 import { FormError } from '../../bootstrap/FormError';
+import { getData } from '../mocks';
 
 const validationSchema = object({
   select: string().label('Select').required(),
 });
 
-type SearchableSelectInFormProps = {
+type SearchableSelectServersideInFormProps = {
   initialSelectValue?: string;
 };
 
-export const SearchableSelectInForm: FC<SearchableSelectInFormProps> = ({
-  initialSelectValue,
-}) => {
+export const SearchableSelectServersideInForm: FC<
+  SearchableSelectServersideInFormProps
+> = ({ initialSelectValue }) => {
   const formMethods = useForm({
     resolver: yupResolver(validationSchema),
     defaultValues: { select: initialSelectValue || '' },
@@ -48,10 +46,20 @@ export const SearchableSelectInForm: FC<SearchableSelectInFormProps> = ({
               <SearchableSelect
                 ref={ref}
                 inputId="select"
-                getOptions={MOCK_OPTIONS}
+                getOptions={async ({ id, inputValue, limit }) => {
+                  const res = await getData({
+                    paging: { limit, offset: 0 },
+                    where: { name: inputValue, id },
+                  });
+                  return res.results.map((r) => ({
+                    label: r.name,
+                    value: r.id,
+                  }));
+                }}
                 value={value}
                 onChange={onChange}
                 onBlur={onBlur}
+                placeholder="Search"
               />
             )}
           />
@@ -70,5 +78,5 @@ export const SearchableSelectInForm: FC<SearchableSelectInFormProps> = ({
 
 export default {
   title: 'Components/SearchableSelect',
-  component: SearchableSelectInForm,
-} as Meta<typeof SearchableSelectInForm>;
+  component: SearchableSelectServersideInForm,
+} as Meta<typeof SearchableSelectServersideInForm>;

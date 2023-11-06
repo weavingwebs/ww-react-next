@@ -5,8 +5,13 @@ import {
   useEffect,
   useState,
 } from 'react';
-import Select, { FormatOptionLabelMeta, SelectInstance } from 'react-select';
+import Select, {
+  FormatOptionLabelMeta,
+  SelectInstance,
+  components,
+} from 'react-select';
 import clsx from 'clsx';
+import { FaSearch } from 'react-icons/fa';
 
 type Option = {
   label: string;
@@ -103,12 +108,19 @@ type SearchableSelectProps = {
     data: Option,
     formatOptionLabelMeta: FormatOptionLabelMeta<Option>
   ) => ReactNode;
+  getOptions:
+    | Option[]
+    | ((where: {
+        id?: string | null;
+        inputValue?: string | null;
+        limit: number;
+      }) => Promise<Option[]>);
   inputId: string;
   // Something that can be used to show that a filter is currently active.
   isActive?: boolean;
   onBlur: FocusEventHandler<HTMLInputElement> | undefined;
   onChange: (value: string | null) => void;
-  options: Option[];
+  placeholder?: string;
   value: string | null;
 };
 
@@ -118,7 +130,7 @@ export const SearchableSelect = forwardRef<
 >(
   (
     {
-      options,
+      getOptions,
       onBlur,
       onChange,
       isActive,
@@ -127,6 +139,7 @@ export const SearchableSelect = forwardRef<
       value,
       className,
       autoFocus,
+      placeholder,
     },
     ref
   ) => {
@@ -135,21 +148,70 @@ export const SearchableSelect = forwardRef<
     // @todo: debounce.
     const [inputValue, setInputValue] = useState('');
 
+    const needsToFetchOptions = !Array.isArray(getOptions);
+
+    const [options, setOptions] = useState<Option[]>(
+      needsToFetchOptions ? [] : getOptions
+    );
+
     useEffect(() => {
       if (!value) {
         setSelected(null);
         return;
       }
-      const foundOption = options?.find((p) => p.value === value);
 
-      if (!foundOption) {
-        // eslint-disable-next-line no-console
-        console.error(`could not find selected option by value: ${value}`);
-        setSelected(null);
+      if (needsToFetchOptions) {
+        setLoading(true);
+
+        getOptions({ limit: 1, id: value })
+          .then((data) => {
+            const foundOption = data.find((p) => p.value === value);
+            if (!foundOption) {
+              // eslint-disable-next-line no-console
+              console.error(
+                `could not find selected option by value: ${value}`
+              );
+              setSelected(null);
+              return;
+            }
+            setSelected(foundOption);
+          })
+          // @todo: error modal
+          // eslint-disable-next-line no-alert
+          .catch((err) => alert(err.message))
+          .finally(() => setLoading(false));
+      } else {
+        const foundOption = options.find((p) => p.value === value);
+
+        if (!foundOption) {
+          // eslint-disable-next-line no-console
+          console.error(`could not find selected option by value: ${value}`);
+          setSelected(null);
+          return;
+        }
+        setSelected(foundOption);
+      }
+    }, [value]);
+
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+      if (!needsToFetchOptions) {
         return;
       }
-      setSelected(foundOption);
-    }, [value]);
+      if (!inputValue.trim()) {
+        setOptions([]);
+        return;
+      }
+      setLoading(true);
+
+      getOptions({ limit: 10, inputValue })
+        .then((opts) => setOptions(opts))
+        // @todo: error modal
+        // eslint-disable-next-line no-alert
+        .catch((err) => alert(err.message))
+        .finally(() => setLoading(false));
+    }, [inputValue, needsToFetchOptions]);
 
     return (
       <div className={clsx(className)}>
@@ -162,6 +224,7 @@ export const SearchableSelect = forwardRef<
           inputId={inputId}
           value={selected}
           onChange={(opt) => onChange(opt?.value || null)}
+          isLoading={loading}
           options={options}
           inputValue={inputValue}
           onInputChange={setInputValue}
@@ -176,7 +239,31 @@ export const SearchableSelect = forwardRef<
               zIndex: 2,
             }),
           }}
+          components={{
+            DropdownIndicator: needsToFetchOptions
+              ? // eslint-disable-next-line react/no-unstable-nested-components
+                () => <FaSearch className="me-4" size={15} />
+              : undefined,
+            IndicatorSeparator: needsToFetchOptions ? () => null : undefined,
+            LoadingMessage: needsToFetchOptions ? () => null : undefined,
+            // @todo: make these proper components.
+            // eslint-disable-next-line react/no-unstable-nested-components
+            Menu: (menuProps) => {
+              if (menuProps.isLoading) {
+                return null;
+              }
+              return (
+                <components.Menu {...menuProps}>
+                  {menuProps.children}
+                </components.Menu>
+              );
+            },
+          }}
+          noOptionsMessage={needsToFetchOptions ? () => null : undefined}
+          placeholder={placeholder}
         />
+
+        {/* @todo: error modal */}
       </div>
     );
   }

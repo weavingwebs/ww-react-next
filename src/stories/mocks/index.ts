@@ -15,6 +15,7 @@ export type MockDataQueryResult = {
 export type MockDataQueryVariables = {
   paging: PagingInput;
   where?: {
+    id?: string | null;
     name?: string | null;
   } | null;
 };
@@ -28,6 +29,9 @@ export const getData = async (vars: MockDataQueryVariables) =>
             return item.name
               .toLocaleLowerCase()
               .includes(vars.where.name.trim().toLocaleLowerCase());
+          }
+          if (vars.where?.id) {
+            return item.id === vars.where.id;
           }
           return true;
         });
