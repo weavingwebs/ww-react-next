@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 
+// @todo: I think we rename the states to show, onHide to be compatible with react boostrap modal props.
 export const useModal = () => {
   const [isOpen, setIsOpen] = useState(false);
   const openModal = useCallback((): void => setIsOpen(true), []);

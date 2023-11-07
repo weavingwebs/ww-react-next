@@ -16,7 +16,7 @@ export const Modal: FC = () => {
           <BootstrapModal.Title>Title</BootstrapModal.Title>
         </BootstrapModal.Header>
         <BootstrapModal.Body>
-          <p className="lead">Lorem ipsum dolor sit amet.</p>
+          Lorem ipsum dolor sit amet.
           <div className="d-flex justify-content-end">
             <Button variant="danger" outlined onClick={closeModal}>
               Close
