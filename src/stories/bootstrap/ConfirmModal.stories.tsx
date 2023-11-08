@@ -28,6 +28,7 @@ export const ConfirmModal: FC = () => {
               onConfirm: async () => {
                 await new Promise((resolve) => {
                   setTimeout(() => {
+                    // eslint-disable-next-line no-alert
                     alert('Confirmed successfully');
                     resolve(null);
                   }, 500);

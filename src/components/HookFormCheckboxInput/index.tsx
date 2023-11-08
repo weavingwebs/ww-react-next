@@ -1,4 +1,4 @@
-import { ReactElement } from 'react';
+import { ReactElement, useId } from 'react';
 import clsx from 'clsx';
 import {
   Control,
@@ -9,7 +9,7 @@ import {
 } from 'react-hook-form';
 import { FormText } from '../../bootstrap/FormText';
 import { FormError } from '../../bootstrap/FormError';
-import { FormLabel } from '../../bootstrap/FormLabel';
+import { FormLabel } from '../../bootstrap';
 
 type HookFormCheckboxInputProps<T extends FieldValues> = {
   className?: string;
@@ -23,6 +23,7 @@ type HookFormCheckboxInputProps<T extends FieldValues> = {
   name: Path<T>;
   required?: boolean;
   topPadding?: boolean;
+  value?: string;
 };
 
 export function HookFormCheckboxInput<T extends FieldValues>({
@@ -37,7 +38,10 @@ export function HookFormCheckboxInput<T extends FieldValues>({
   disabled,
   topPadding,
   control: _control,
+  value,
 }: HookFormCheckboxInputProps<T>): ReactElement | null {
+  const id = useId();
+
   const formContext = useFormContext<T>();
   let control = _control;
   if (!_control) {
@@ -67,14 +71,15 @@ export function HookFormCheckboxInput<T extends FieldValues>({
         <input
           {...field}
           type="checkbox"
-          id={name}
+          id={id}
           className={clsx('form-check-input', inputClassName)}
           aria-invalid={error ? 'true' : 'false'}
           aria-errormessage={error ? `${name}Error` : undefined}
           disabled={disabled}
+          value={value}
         />
         <FormLabel
-          htmlFor={name}
+          htmlFor={id}
           required={required}
           className={clsx('form-check-label', labelClassName)}
         >
