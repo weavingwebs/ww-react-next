@@ -53,8 +53,8 @@ export type CustomerFragment = {
   company: string;
   // yyyy-mm-dd format.
   dateOfBirth: string;
-  // An enum.
-  gender: 'male' | 'female' | 'other';
+  // An optional enum.
+  gender: Gender | null;
   // GUID assigned by the server.
   id: string;
   name: string;
@@ -64,3 +64,15 @@ export type CustomerFragment = {
 };
 
 export type CustomerInput = Omit<CustomerFragment, 'id' | 'registered'>;
+
+export enum Gender {
+  female = 'female',
+  male = 'male',
+  other = 'other',
+}
+
+export const GenderLabels: Record<Gender, string> = {
+  male: 'Male',
+  female: 'Female',
+  other: 'Other',
+};

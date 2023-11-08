@@ -7,7 +7,7 @@ import {
 } from 'react-hook-form';
 import { CSSProperties, ReactElement, ReactNode } from 'react';
 import clsx from 'clsx';
-import { format, isValid, parse } from 'date-fns';
+import { format, isDate } from 'date-fns';
 import { FormLabel } from '../../bootstrap';
 import { FormError } from '../../bootstrap/FormError';
 import { FormText } from '../../bootstrap/FormText';
@@ -54,7 +54,7 @@ export function HookFormDateInput<T extends FieldValues>({
   }
 
   const {
-    field,
+    field: { value: _rawValue, ...field },
     fieldState: { error },
   } = useController({
     name,
@@ -64,29 +64,15 @@ export function HookFormDateInput<T extends FieldValues>({
     },
   });
 
-  const getFieldValue = (): string => {
-    if (
-      typeof field.value === 'undefined' ||
-      field.value === null ||
-      !isValid(field.value)
-    ) {
-      return '';
+  // Handle date objects or strings or null/undefined.
+  let value = '';
+  if (_rawValue) {
+    if (isDate(_rawValue)) {
+      value = format(_rawValue, 'yyyy-MM-dd');
+    } else {
+      value = _rawValue;
     }
-    return format(field.value, 'yyyy-MM-dd');
-  };
-
-  const runOnChange = (value: string | null | undefined) => {
-    if (!value) {
-      field.onChange('');
-      return;
-    }
-    const parsed = parse(value, 'yyyy-MM-dd', new Date());
-    if (!isValid(parsed)) {
-      field.onChange('');
-      return;
-    }
-    field.onChange(parsed);
-  };
+  }
 
   return (
     <div className={clsx(className, 'has-validation')} aria-live="polite">
@@ -107,13 +93,7 @@ export function HookFormDateInput<T extends FieldValues>({
           {...inputProps}
           {...field}
           type="date"
-          value={getFieldValue()}
-          onChange={(ev) => runOnChange(ev.target.value)}
-          onBlur={(ev) => {
-            const { value } = ev.target;
-            runOnChange(value);
-            field.onBlur();
-          }}
+          value={value}
           id={name}
           className={clsx(inputClassName, { 'is-invalid': error })}
           aria-invalid={error ? 'true' : 'false'}

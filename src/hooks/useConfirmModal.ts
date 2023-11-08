@@ -67,12 +67,14 @@ const DEFAULT: State = {
   },
 };
 
+type ShowConfirmFn = (args: Omit<State, 'isConfirming' | 'error'>) => void;
+
 export const useConfirmModal = () => {
   const { isOpen, openModal, closeModal } = useModal();
   const [state, dispatch] = useReducer(confirmModalReducer, DEFAULT);
 
-  const showConfirm = (newState: Omit<State, 'isConfirming' | 'error'>) => {
-    // incorporate into reducer.
+  const showConfirm: ShowConfirmFn = (newState) => {
+    // Incorporate into reducer - combine reducers?
     openModal();
 
     dispatch({

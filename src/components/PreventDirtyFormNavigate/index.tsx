@@ -41,9 +41,8 @@ export function usePreventNavigate(prevent: boolean) {
 
 // // Use inside React Hook Forms only.
 export const PreventDirtyFormNavigate = memo(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (props: { control?: Control<any> }) => {
-    const formContext = useFormContext<any>();
+  (props: { control?: Control<object> }) => {
+    const formContext = useFormContext<object>();
     let { control } = props;
     if (!control) {
       if (!formContext) {

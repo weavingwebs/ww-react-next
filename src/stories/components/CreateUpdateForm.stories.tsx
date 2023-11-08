@@ -14,48 +14,48 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { format, isValid, parse } from 'date-fns';
 import { HookFormInput } from '../../components/HookFormInput';
 import { Button } from '../../bootstrap/Button';
-import { CustomerFragment, CustomerInput } from '../mocks';
+import {
+  CustomerFragment,
+  CustomerInput,
+  Gender,
+  GenderLabels,
+} from '../mocks';
 import { ErrorMessage, Loading } from '../../bootstrap';
 import { PreventDirtyFormNavigate } from '../../components/PreventDirtyFormNavigate';
 import { HookFormCheckboxInput } from '../../components/HookFormCheckboxInput';
 import { HookFormDateInput } from '../../components/HookFormDateInput';
+import { transformEmptyToNull } from '../../util/forms';
+import { useMemoOnce } from '../../hooks/useMemoOnce';
 
 // Define the shape of the form values, overriding any props as needed for compatibility with HTML inputs.
 type FormValues = Omit<
   CustomerInput,
   'dateOfBirth' | 'archived' | 'age' | 'gender'
 > & {
+  // We don't want to default number to 0, we want it not set (for new).
   age: number | null;
   archived: boolean;
   dateOfBirth: Date | null;
-  gender: GenderEnumType | '';
+  gender: Gender | '';
 };
 
 // Convert the real values to the form values.
-const fragmentToValues = async (args: {
-  errorOnInvalidValue?: boolean;
-  fragment: CustomerFragment;
-}): Promise<FormValues> => {
-  const { fragment, errorOnInvalidValue } = args;
-
+const fragmentToValues = (
+  fragment: CustomerFragment,
+  opts?: { ignoreErrors?: boolean }
+): FormValues => {
   let dateOfBirth: Date | null = null;
 
   if (fragment.dateOfBirth) {
     dateOfBirth = parse(fragment.dateOfBirth, 'yyyy-MM-dd', new Date());
-    // Error only if flag set & invalid value returned by server.
-    if (errorOnInvalidValue && !isValid(dateOfBirth)) {
-      throw new Error(
-        `failed to parse dateOfBirth from '${fragment.dateOfBirth}'`
-      );
+    if (!isValid(dateOfBirth)) {
+      dateOfBirth = null;
+      if (!opts?.ignoreErrors) {
+        throw new Error(
+          `failed to parse dateOfBirth from '${fragment.dateOfBirth}'`
+        );
+      }
     }
-  }
-
-  // For boolean, it's probably best to err on the side of caution.
-  // Otherwise, we might end up being blocked from submitting silently.
-  if (errorOnInvalidValue && typeof fragment.archived !== 'boolean') {
-    throw new Error(
-      `archived is of invalid type: ${typeof fragment.archived}, expecting: boolean`
-    );
   }
   return {
     age: fragment.age,
@@ -70,6 +70,8 @@ const fragmentToValues = async (args: {
 
 // Convert the form values to the onSubmit input.
 const valuesToInput = (values: FormValues): CustomerInput => {
+  // NOTE: empty fields *should* be dealt with by the form validation but our values argument type allows them so we
+  // must deal with it.
   if (!values.dateOfBirth) {
     throw new Error('dateOfBirth is null');
   }
@@ -79,6 +81,7 @@ const valuesToInput = (values: FormValues): CustomerInput => {
   if (!values.gender) {
     throw new Error(`gender is ''`);
   }
+
   return {
     age: values.age,
     company: values.company,
@@ -90,40 +93,21 @@ const valuesToInput = (values: FormValues): CustomerInput => {
   };
 };
 
-type GenderEnumType = 'male' | 'female' | 'other';
-
-const genderEnum: Record<GenderEnumType, GenderEnumType> = {
-  female: 'female',
-  male: 'male',
-  other: 'other',
-};
-
-const GenderEnumLabels: Record<GenderEnumType, string> = {
-  male: 'Male',
-  female: 'Female',
-  other: 'Other',
-};
-
 const validationSchema: ObjectSchema<FormValues> = object({
   age: number()
     .label('Age')
-    .transform((value, originalValue) =>
-      typeof originalValue === 'undefined' || originalValue === ''
-        ? null
-        : value
-    )
+    .transform(transformEmptyToNull)
     .positive()
     .required(),
   company: string().label('Company').required().max(128),
-  dateOfBirth: date().label('Date of birth').required(),
-  gender: mixed<GenderEnumType>()
-    .oneOf(Object.values(genderEnum))
+  dateOfBirth: date()
+    .label('Date of birth')
+    .required()
+    .transform(transformEmptyToNull),
+  gender: mixed<Gender>()
+    .oneOf(Object.values(Gender))
     .label('Gender')
-    .transform((value, originalValue) =>
-      typeof originalValue === 'undefined' || originalValue === ''
-        ? null
-        : value
-    )
+    .transform(transformEmptyToNull)
     .required(),
   name: string().label('Name').required().max(128),
   phone: string().label('Phone number').required(),
@@ -155,25 +139,27 @@ export const CreateUpdateForm: FC<CreateUpdateFormProps> = ({
   const [loadError, setLoadError] = useState<Error | null>(null);
   const [submitError, setSubmitError] = useState<Error | null>(null);
 
+  const defaultValues: FormValues = useMemoOnce(() => {
+    if (!customer) {
+      return { ...initialValues };
+    }
+
+    // Try and convert the values, if it fails then show the error & just parse what we can.
+    try {
+      return fragmentToValues(customer);
+    } catch (err) {
+      setLoadError(
+        new Error('There were problems with loading some initial values', {
+          cause: err,
+        })
+      );
+      return fragmentToValues(customer, { ignoreErrors: true });
+    }
+  });
+
   const formMethods = useForm<FormValues>({
     resolver: yupResolver(validationSchema),
-    defaultValues: customer
-      ? async () =>
-          fragmentToValues({
-            fragment: customer,
-            errorOnInvalidValue: true,
-          }).catch((err) => {
-            setLoadError(
-              new Error(
-                'There were problems with loading some initial values',
-                { cause: err }
-              )
-            );
-            return fragmentToValues({ fragment: customer });
-          })
-      : {
-          ...initialValues,
-        },
+    defaultValues,
   });
 
   const {
@@ -189,30 +175,25 @@ export const CreateUpdateForm: FC<CreateUpdateFormProps> = ({
           // Reset error every submit.
           setSubmitError(null);
 
-          try {
-            const res = await onSubmit(valuesToInput(values));
-            const newFormValues = await fragmentToValues({
-              fragment: res,
-              errorOnInvalidValue: true,
-            }).catch((err) => {
-              setSubmitError(
-                new Error(
-                  'Saved values to server but failed to replace form state',
-                  {
-                    cause: err,
-                  }
-                )
-              );
-            });
+          await onSubmit(valuesToInput(values))
+            .catch((err) => {
+              // Wrap save error explicitly.
+              throw new Error('Failed to save values', { cause: err });
+            })
+            .then((res) => {
+              // Reset the 'default values' to the newly saved values if save succeeded.
+              try {
+                reset(fragmentToValues(res));
+              } catch (err) {
+                // Fallback to resetting the defaults to the submitted values.
+                reset(values);
 
-            if (newFormValues) {
-              reset(newFormValues);
-              // Now clear the load error as it's no longer relevant.
-              setLoadError(null);
-            }
-          } catch (err) {
-            setSubmitError(new Error('Failed to save values', { cause: err }));
-          }
+                throw new Error('Save successful but response was invalid', {
+                  cause: err,
+                });
+              }
+            })
+            .catch(setSubmitError);
         })}
       >
         <PreventDirtyFormNavigate />
@@ -268,7 +249,7 @@ export const CreateUpdateForm: FC<CreateUpdateFormProps> = ({
         >
           <option value="">Please select</option>
           <option value="invalid">Invalid option</option>
-          {Object.entries(GenderEnumLabels).map(([value, label]) => (
+          {Object.entries(GenderLabels).map(([value, label]) => (
             <option key={value} value={value}>
               {label}
             </option>
