@@ -9,7 +9,7 @@ export const makeArrayFromRange = (start: number, end: number) => {
   return res;
 };
 
-type Booleanish = 'true' | 'false';
+export type Booleanish = 'true' | 'false';
 
 export const isBooleanish = (str: unknown) => str === 'true' || str === 'false';
 
