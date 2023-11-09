@@ -5,25 +5,20 @@ import { Button } from '../../bootstrap/Button';
 import { useModal } from '../../hooks/useModal';
 
 export const Modal: FC = () => {
-  const { isOpen, openModal, closeModal } = useModal();
+  const { isOpen, onClose, onOpen } = useModal();
   return (
     <div>
-      <Button variant="primary" onClick={openModal}>
+      <Button variant="primary" onClick={onOpen}>
         Open modal
       </Button>
-      <BootstrapModal
-        show={isOpen}
-        onHide={closeModal}
-        centered
-        animation={false}
-      >
+      <BootstrapModal show={isOpen} onHide={onClose} centered animation={false}>
         <BootstrapModal.Header closeButton>
           <BootstrapModal.Title>Title</BootstrapModal.Title>
         </BootstrapModal.Header>
         <BootstrapModal.Body>
           Lorem ipsum dolor sit amet.
           <div className="d-flex justify-content-end">
-            <Button variant="danger" outlined onClick={closeModal}>
+            <Button variant="danger" outlined onClick={onClose}>
               Close
             </Button>
           </div>

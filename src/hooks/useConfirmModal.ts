@@ -1,125 +1,76 @@
-import { ReactNode, useReducer } from 'react';
-import { useModal } from './useModal';
+import { CSSProperties, ReactNode, useCallback, useReducer } from 'react';
+import { ModalReducerCloseAction, ModalReducerState } from './useModal';
 
-export type ConfirmModalState = {
+export type ConfirmModalConfig = {
+  cancelText?: string;
   confirmBtnLabel?: ReactNode;
+  confirmButtonStyle?: CSSProperties;
   confirmLine?: ReactNode;
-  error: Error | null;
-  isConfirming: boolean;
+  isPositiveAction?: boolean;
   onConfirm: () => Promise<void>;
+  size?: 'lg' | 'sm' | 'xl';
   titleLine?: string;
 };
 
-type SetAction = {
-  state: ConfirmModalState;
-  type: 'set';
+export type ConfirmModalState = ModalReducerState & {
+  config: ConfirmModalConfig;
 };
 
-type StartConfirmingAction = {
-  type: 'start_confirming';
+const DEFAULT: ConfirmModalState = {
+  isOpen: false,
+  config: {
+    onConfirm: async () => {
+      throw new Error('onConfirm is not set');
+    },
+  },
 };
 
-type StopConfirmingAction = {
-  type: 'stop_confirming';
+type OpenAction = {
+  config: ConfirmModalConfig;
+  type: 'open';
 };
 
-type ShowErrorAction = {
-  error: Error;
-  type: 'show_error';
-};
-
-type Action =
-  | SetAction
-  | StartConfirmingAction
-  | StopConfirmingAction
-  | ShowErrorAction;
+type Action = OpenAction | ModalReducerCloseAction;
 
 const confirmModalReducer = (
   s: ConfirmModalState,
   a: Action
 ): ConfirmModalState => {
   switch (a.type) {
-    case 'set': {
-      return { ...a.state };
+    case 'open': {
+      return { config: a.config, isOpen: true };
     }
-    case 'start_confirming': {
-      return { ...s, isConfirming: true, error: null };
-    }
-    case 'stop_confirming': {
-      return { ...s, isConfirming: false };
-    }
-    case 'show_error': {
-      return { ...s, isConfirming: false, error: a.error };
+    case 'close': {
+      return { ...DEFAULT };
     }
     default: {
-      // eslint-disable-next-line no-console
-      console.error({ a });
-      throw new Error(`unhandled case`);
+      // @ts-expect-error belt and braces.
+      throw new Error(`invalid action '${a.type}'`);
     }
   }
 };
 
-const DEFAULT: ConfirmModalState = {
-  isConfirming: false,
-  error: null,
-  titleLine: 'Are you sure?',
-  confirmBtnLabel: 'Confirm',
-  confirmLine: 'Please confirm this action.',
-  onConfirm: async () => {
-    throw new Error('onConfirm is not set');
-  },
-};
-
-type ShowConfirmFn = (
-  args: Omit<ConfirmModalState, 'isConfirming' | 'error'>
-) => void;
-
 export const useConfirmModal = () => {
-  const { isOpen, openModal, closeModal } = useModal();
   const [state, dispatch] = useReducer(confirmModalReducer, DEFAULT);
 
-  const showConfirm: ShowConfirmFn = (newState) => {
-    // Incorporate into reducer - combine reducers?
-    openModal();
-
-    dispatch({
-      type: 'set',
-      state: {
-        isConfirming: DEFAULT.isConfirming,
-        error: DEFAULT.error,
-        titleLine: newState.titleLine || DEFAULT.titleLine,
-        confirmBtnLabel: newState.confirmBtnLabel || DEFAULT.confirmBtnLabel,
-        confirmLine: newState.confirmLine || DEFAULT.confirmLine,
-        onConfirm: newState.onConfirm,
-      },
-    });
-  };
-
-  const onCancel = () => {
-    // reset all state?
-    closeModal();
-  };
-
-  // remove onConfirm from state as we'll be wrapping it.
-  const { onConfirm: _onConfirm, ...confirmModalState } = state;
-
-  const onConfirm = async () => {
-    dispatch({ type: 'start_confirming' });
-    _onConfirm()
-      .then(() => {
-        dispatch({ type: 'stop_confirming' });
-        onCancel();
-      })
-      .catch((error) => {
-        dispatch({ type: 'show_error', error });
+  const showConfirm = useCallback(
+    (config: ConfirmModalConfig) => {
+      dispatch({
+        type: 'open',
+        config,
       });
-  };
+    },
+    [dispatch]
+  );
+
+  const onCancel = useCallback(() => {
+    dispatch({ type: 'close' });
+  }, [dispatch]);
 
   return {
-    ...confirmModalState,
+    ...state.config,
+    isOpen: state.isOpen,
     showConfirm,
-    onConfirm,
     onCancel,
-    isOpen,
   };
 };

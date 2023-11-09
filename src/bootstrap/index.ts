@@ -6,3 +6,4 @@ export * from './FormText';
 export * from './Pagination';
 export * from './Button';
 export * from './TableResultsWithPlaceholder';
+export * from './util';

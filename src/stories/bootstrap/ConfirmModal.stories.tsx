@@ -5,7 +5,7 @@ import { useConfirmModal } from '../../hooks/useConfirmModal';
 import { ConfirmModal } from '../../components';
 
 export const ConfirmModalExample: FC = () => {
-  const { showConfirm, ...confirmModalState } = useConfirmModal();
+  const confirmModalState = useConfirmModal();
 
   return (
     <div>
@@ -13,7 +13,7 @@ export const ConfirmModalExample: FC = () => {
         <Button
           variant="primary"
           onClick={() =>
-            showConfirm({
+            confirmModalState.showConfirm({
               onConfirm: async () => {
                 await new Promise((resolve) => {
                   setTimeout(() => {
@@ -33,7 +33,7 @@ export const ConfirmModalExample: FC = () => {
         <Button
           variant="primary"
           onClick={() =>
-            showConfirm({
+            confirmModalState.showConfirm({
               onConfirm: async () => {
                 await new Promise((resolve, reject) => {
                   setTimeout(() => {

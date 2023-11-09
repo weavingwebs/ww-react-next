@@ -1,42 +1,44 @@
-import { CSSProperties, FC, PropsWithChildren } from 'react';
+import { FC, useEffect } from 'react';
 import BootstrapModal from 'react-bootstrap/Modal';
 import { Button, ErrorMessage, Loading } from '../../bootstrap';
-import { useConfirmModal } from '../../hooks';
+import { useAsync, useConfirmModal } from '../../hooks';
 
-// @todo: fix this crazy type.
-type ConfirmModalProps = Omit<
-  ReturnType<typeof useConfirmModal>,
-  'showConfirm'
-> & {
-  // @todo: Include those in reducer.
-  // That way we can have one confirm modal component
-  // for multiple confirms
-  cancelText?: string;
-  confirmButtonStyle?: CSSProperties;
-  isPositiveAction?: boolean;
-  size?: 'lg' | 'sm' | 'xl';
-};
+type ConfirmModalProps = ReturnType<typeof useConfirmModal>;
 
-export const ConfirmModal: FC<PropsWithChildren<ConfirmModalProps>> = ({
+export const ConfirmModal: FC<ConfirmModalProps> = ({
   titleLine,
   confirmLine,
-  error,
   confirmBtnLabel,
   onConfirm,
-  onCancel,
-  isConfirming,
-  isOpen,
   size,
   cancelText,
   confirmButtonStyle,
   isPositiveAction,
+  isOpen,
+  onCancel,
 }) => {
+  const {
+    isLoading: isConfirming,
+    error,
+    runAsync,
+    resetAsync,
+  } = useAsync<void>({
+    isLoading: false,
+    result: null,
+  });
+
+  // Reset error on close.
+  useEffect(() => {
+    if (!isOpen) {
+      resetAsync();
+    }
+  }, [isOpen]);
+
   return (
     <BootstrapModal
-      centered
       show={isOpen}
       onHide={onCancel}
-      animation={false}
+      centered
       scrollable={false}
       // Don't allow dismissing while confirming.
       backdrop={isConfirming ? 'static' : undefined}
@@ -56,7 +58,10 @@ export const ConfirmModal: FC<PropsWithChildren<ConfirmModalProps>> = ({
           </Button>
           <Button
             variant={isPositiveAction ? 'success' : 'danger'}
-            onClick={onConfirm}
+            onClick={(ev) => {
+              ev.preventDefault();
+              runAsync(onConfirm);
+            }}
             disabled={isConfirming}
             className="ms-2"
             style={confirmButtonStyle}
