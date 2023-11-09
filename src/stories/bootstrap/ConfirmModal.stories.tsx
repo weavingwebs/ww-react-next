@@ -1,22 +1,11 @@
-import BootstrapModal from 'react-bootstrap/Modal';
 import { FC } from 'react';
 import { Meta } from '@storybook/react';
 import { Button } from '../../bootstrap/Button';
 import { useConfirmModal } from '../../hooks/useConfirmModal';
-import { ErrorMessage, Loading } from '../../bootstrap';
+import { ConfirmModal } from '../../components';
 
-export const ConfirmModal: FC = () => {
-  const {
-    isOpen,
-    onCancel,
-    titleLine,
-    confirmLine,
-    showConfirm,
-    confirmBtnLabel,
-    isConfirming,
-    error,
-    onConfirm,
-  } = useConfirmModal();
+export const ConfirmModalExample: FC = () => {
+  const { showConfirm, ...confirmModalState } = useConfirmModal();
 
   return (
     <div>
@@ -59,49 +48,14 @@ export const ConfirmModal: FC = () => {
         </Button>
       </div>
 
-      <BootstrapModal
-        centered
-        show={isOpen}
-        onHide={onCancel}
-        animation={false}
-        scrollable={false}
-        // Don't allow dismissing while confirming.
-        backdrop={isConfirming ? 'static' : undefined}
-      >
-        <BootstrapModal.Header closeButton={!isConfirming}>
-          <BootstrapModal.Title>{titleLine}</BootstrapModal.Title>
-        </BootstrapModal.Header>
-        <BootstrapModal.Body>
-          {confirmLine}
-
-          <ErrorMessage error={error} className="mt-3" />
-
-          <div className="d-flex justify-content-end">
-            <Button variant="danger" outlined onClick={onCancel}>
-              Close
-            </Button>
-            <Button
-              variant="primary"
-              onClick={onConfirm}
-              disabled={isConfirming}
-              className="ms-2"
-            >
-              {isConfirming ? (
-                <Loading size="sm" colour="light" />
-              ) : (
-                confirmBtnLabel
-              )}
-            </Button>
-          </div>
-        </BootstrapModal.Body>
-      </BootstrapModal>
+      <ConfirmModal {...confirmModalState} />
     </div>
   );
 };
 
 const meta: Meta = {
   title: 'Bootstrap/Modal',
-  component: ConfirmModal,
+  component: ConfirmModalExample,
 };
 
 export default meta;

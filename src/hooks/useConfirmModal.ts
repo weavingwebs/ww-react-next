@@ -1,7 +1,7 @@
 import { ReactNode, useReducer } from 'react';
 import { useModal } from './useModal';
 
-type State = {
+export type ConfirmModalState = {
   confirmBtnLabel?: ReactNode;
   confirmLine?: ReactNode;
   error: Error | null;
@@ -11,7 +11,7 @@ type State = {
 };
 
 type SetAction = {
-  state: State;
+  state: ConfirmModalState;
   type: 'set';
 };
 
@@ -34,7 +34,10 @@ type Action =
   | StopConfirmingAction
   | ShowErrorAction;
 
-const confirmModalReducer = (s: State, a: Action): State => {
+const confirmModalReducer = (
+  s: ConfirmModalState,
+  a: Action
+): ConfirmModalState => {
   switch (a.type) {
     case 'set': {
       return { ...a.state };
@@ -56,7 +59,7 @@ const confirmModalReducer = (s: State, a: Action): State => {
   }
 };
 
-const DEFAULT: State = {
+const DEFAULT: ConfirmModalState = {
   isConfirming: false,
   error: null,
   titleLine: 'Are you sure?',
@@ -67,7 +70,9 @@ const DEFAULT: State = {
   },
 };
 
-type ShowConfirmFn = (args: Omit<State, 'isConfirming' | 'error'>) => void;
+type ShowConfirmFn = (
+  args: Omit<ConfirmModalState, 'isConfirming' | 'error'>
+) => void;
 
 export const useConfirmModal = () => {
   const { isOpen, openModal, closeModal } = useModal();

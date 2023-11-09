@@ -11,7 +11,12 @@ export const Modal: FC = () => {
       <Button variant="primary" onClick={openModal}>
         Open modal
       </Button>
-      <BootstrapModal show={isOpen} onHide={closeModal} centered>
+      <BootstrapModal
+        show={isOpen}
+        onHide={closeModal}
+        centered
+        animation={false}
+      >
         <BootstrapModal.Header closeButton>
           <BootstrapModal.Title>Title</BootstrapModal.Title>
         </BootstrapModal.Header>
