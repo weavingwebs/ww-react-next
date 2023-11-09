@@ -45,7 +45,7 @@ export const FormLabel: FC<FormLabelProps> = ({
 
   return (
     <Component
-      className={clsx('form-label', className)}
+      className={clsx('form-label fs-6', className)}
       style={style}
       {...componentProps}
     >
