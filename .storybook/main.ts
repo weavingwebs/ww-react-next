@@ -24,6 +24,11 @@ const config: StorybookConfig = {
     config.resolve.alias = {
       ...config.resolve.alias,
       'next/router': 'next-router-mock',
+      'next/router.js': 'next-router-mock',
+    };
+    config.resolve.fallback = {
+      ...config.resolve.fallback,
+      zlib: false,
     };
     return config;
   },

@@ -1,5 +1,5 @@
 import { FC, useEffect } from 'react';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/router.js';
 import { FullPageLoading } from '../../bootstrap';
 
 export const Redirect: FC<{

@@ -1,6 +1,6 @@
 import { memo, useEffect } from 'react';
 import { Control, useFormContext, useFormState } from 'react-hook-form';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/router.js';
 
 export function usePreventNavigate(prevent: boolean) {
   const router = useRouter();

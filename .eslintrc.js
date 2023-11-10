@@ -75,9 +75,15 @@ module.exports = {
     'no-restricted-imports': [
       'error',
       {
-        // Do not allow full lodash import, only allow specific functions
-        // i.e. import isEqual from 'lodash/isEqual'.
-        paths: ['lodash'],
+        paths: [
+          // Do not allow full lodash import, only allow specific functions
+          // i.e. import isEqual from 'lodash/isEqual'.
+          'lodash',
+          // Require .js extension on nextjs imports.
+          // https://github.com/chakra-ui/chakra-ui/issues/7363
+          'next/link',
+          'next/router',
+        ],
       },
     ],
     // @todo remove this once standard config merged.
