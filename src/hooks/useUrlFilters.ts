@@ -1,4 +1,4 @@
-import { NextRouter } from 'next/router';
+import { NextRouter } from 'next/router.js';
 import { useEffect, useMemo, useReducer, useState } from 'react';
 import isEqual from 'lodash/isEqual';
 import { ParsedUrlQueryInput } from 'node:querystring';

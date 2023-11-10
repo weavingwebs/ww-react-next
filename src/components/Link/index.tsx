@@ -1,4 +1,4 @@
-import NextLink, { LinkProps as NextLinkProps } from 'next/link';
+import NextLink, { LinkProps as NextLinkProps } from 'next/link.js';
 import clsx from 'clsx';
 import { AnchorHTMLAttributes, FC, PropsWithChildren } from 'react';
 import { isAbsoluteUrl } from '../../util';
