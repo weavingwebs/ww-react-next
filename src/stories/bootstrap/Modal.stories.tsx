@@ -1,4 +1,4 @@
-import BootstrapModal from 'react-bootstrap/Modal';
+import BootstrapModal from 'react-bootstrap/cjs/Modal.js';
 import { FC } from 'react';
 import { Meta } from '@storybook/react';
 import { Button } from '../../bootstrap/Button';

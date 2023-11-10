@@ -1,5 +1,5 @@
 import { FC, useEffect } from 'react';
-import BootstrapModal from 'react-bootstrap/Modal';
+import BootstrapModal from 'react-bootstrap/cjs/Modal.js';
 import { Button, ErrorMessage, Loading } from '../../bootstrap';
 import { useAsync, useConfirmModal } from '../../hooks';
 
