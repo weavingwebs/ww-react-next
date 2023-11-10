@@ -1,0 +1,30 @@
+import { Meta, Title } from '@storybook/blocks';
+import { SearchableSelectInForm } from './SearchableSelectInForm.stories';
+import { SearchableSelectServersideInForm } from './SearchableSelectServersideInForm.stories';
+
+<Meta title="Components/SearchableSelect" />
+<Title>SearchableSelect Examples</Title>
+
+## 1. Client Side Demos
+
+### - 1.1 No initial values
+
+The options are provided client-side (no data fetching).
+
+<SearchableSelectInForm />
+
+### - 1.2 With initial values
+
+<SearchableSelectInForm initialSelectValue="1" />
+
+## 2. Server Side Demos
+
+### - 2.1. No initial values
+
+<SearchableSelectServersideInForm />
+
+### - 2.2. With initial values
+
+#### Option will be fetched from the server (by ID which is the only value kept in our form).
+
+<SearchableSelectServersideInForm initialSelectValue="58219a6f-58bb-4e07-8b15-db12c0611178" />

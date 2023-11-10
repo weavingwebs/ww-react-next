@@ -31,7 +31,7 @@ export const FormLabel: FC<FormLabelProps> = ({
   ...asProps
 }) => {
   const { as, ...componentProps } = asProps;
-  let Component: keyof JSX.IntrinsicElements = 'label';
+  let Component: keyof JSX.IntrinsicElements;
 
   switch (as) {
     case 'legend': {
@@ -45,7 +45,7 @@ export const FormLabel: FC<FormLabelProps> = ({
 
   return (
     <Component
-      className={clsx('form-label', className)}
+      className={clsx('form-label fs-6', className)}
       style={style}
       {...componentProps}
     >

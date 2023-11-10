@@ -15,6 +15,7 @@ export type MockDataQueryResult = {
 export type MockDataQueryVariables = {
   paging: PagingInput;
   where?: {
+    id?: string | null;
     name?: string | null;
   } | null;
 };
@@ -29,6 +30,9 @@ export const getData = async (vars: MockDataQueryVariables) =>
               .toLocaleLowerCase()
               .includes(vars.where.name.trim().toLocaleLowerCase());
           }
+          if (vars.where?.id) {
+            return item.id === vars.where.id;
+          }
           return true;
         });
         const offset = vars.paging.offset || 0;
@@ -42,3 +46,33 @@ export const getData = async (vars: MockDataQueryVariables) =>
       Math.random() * 500 + 50
     );
   });
+
+export type CustomerFragment = {
+  age: number;
+  archived: boolean;
+  company: string;
+  // yyyy-mm-dd format.
+  dateOfBirth: string;
+  // An optional enum.
+  gender: Gender | null;
+  // GUID assigned by the server.
+  id: string;
+  name: string;
+  phone: string;
+  // Server timestamps on during creation.
+  registered: string;
+};
+
+export type CustomerInput = Omit<CustomerFragment, 'id' | 'registered'>;
+
+export enum Gender {
+  female = 'female',
+  male = 'male',
+  other = 'other',
+}
+
+export const GenderLabels: Record<Gender, string> = {
+  male: 'Male',
+  female: 'Female',
+  other: 'Other',
+};

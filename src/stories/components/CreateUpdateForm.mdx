@@ -1,0 +1,113 @@
+import { Canvas, Meta, Title } from '@storybook/blocks';
+import { CreateUpdateForm } from './CreateUpdateForm.stories';
+
+<Meta title="Components/CreateUpdateForm" />
+<Title>CreateUpdateForm</Title>
+
+## Create Customer Form Example @todo this errors on submit
+
+<Canvas>
+  <CreateUpdateForm
+    customer={null}
+    onSubmit={(input) => {
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          alert(
+            `Successfully submitted with input: \n${JSON.stringify(
+              input,
+              null,
+              2
+            )}`
+          );
+          resolve();
+        }, 500);
+      });
+    }}
+  />
+</Canvas>
+
+@todo: need to be able to see the code
+
+## Update Customer Form Example (broken date from server)
+
+<Canvas>
+  <CreateUpdateForm
+    customer={{
+      name: 'Test',
+      gender: 'female',
+      company: 'test',
+      phone: 'test',
+      age: 1,
+      archived: true,
+      id: '1234',
+      dateOfBirth: '232',
+      registered: 'datetime',
+    }}
+    onSubmit={(input) => {
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          alert(
+            `Successfully submitted with input: \n${JSON.stringify(
+              input,
+              null,
+              2
+            )}`
+          );
+          resolve({
+            name: input.name,
+            age: input.age,
+            dateOfBirth: input.dateOfBirth,
+            phone: input.phone,
+            archived: input.archived,
+            company: input.company,
+            gender: input.gender,
+            registered: 'timestamp',
+            id: 'id',
+          });
+        }, 500);
+      });
+    }}
+  />
+</Canvas>
+
+## Update Customer Form Example
+
+<Canvas>
+  <CreateUpdateForm
+    customer={{
+      name: 'Test',
+      gender: 'female',
+      company: 'test',
+      phone: 'test',
+      age: 1,
+      archived: false,
+      id: '1234',
+      dateOfBirth: '1996-06-28',
+      registered: 'datetime',
+    }}
+    onSubmit={(input) => {
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          alert(
+            `Successfully submitted with input: \n${JSON.stringify(
+              input,
+              null,
+              2
+            )}`
+          );
+          resolve({
+            name: input.name,
+            age: input.age,
+            dateOfBirth: input.dateOfBirth,
+            phone: input.phone,
+            archived: input.archived,
+            company: input.company,
+            gender: input.gender,
+            registered: 'timestamp',
+            id: 'id',
+          });
+        }, 500);
+      });
+    }}
+  />
+</Canvas>

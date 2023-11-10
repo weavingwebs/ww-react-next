@@ -24,11 +24,19 @@ module.exports = {
     'typescript-sort-keys',
     'unused-imports',
     'prettier',
-    'prefer-arrow',
     'sort-class-members',
   ],
   rules: {
-    '@typescript-eslint/no-unused-vars': 'error',
+    '@typescript-eslint/no-unused-vars': [
+      'error',
+      {
+        ignoreRestSiblings: true,
+        vars: 'all',
+        varsIgnorePattern: '^_',
+        args: 'after-used',
+        argsIgnorePattern: '^_',
+      },
+    ],
     'import/extensions': 'off',
     'import/no-extraneous-dependencies': 'off',
     'import/no-unresolved': 'off',
@@ -46,15 +54,7 @@ module.exports = {
     'react/react-in-jsx-scope': 'off',
     'typescript-sort-keys/interface': 'error',
     'typescript-sort-keys/string-enum': 'error',
-    'unused-imports/no-unused-imports': 'error',
-    'prefer-arrow/prefer-arrow-functions': [
-      'error',
-      {
-        disallowPrototype: true,
-        singleReturnOnly: true,
-        classPropertiesAllowed: false,
-      },
-    ],
+    'unused-imports/no-unused-imports': ['error', { ignoreRestSiblings: true }],
     'sort-class-members/sort-class-members': [
       'error',
       {
@@ -80,6 +80,9 @@ module.exports = {
         paths: ['lodash'],
       },
     ],
+    // @todo remove this once standard config merged.
+    'no-shadow': 'off',
+    '@typescript-eslint/no-shadow': 'warn',
     // @todo: Some good rules to keep
     // no-alert
     // no-restricted-globals
