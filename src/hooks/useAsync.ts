@@ -85,20 +85,17 @@ export function useAsync<T>(
     error: null,
   });
 
-  const runAsync = useCallback(
-    (fn: () => Promise<T | null>) => {
-      dispatch({ type: 'start_loading' });
-      fn()
-        .then(() => dispatch({ type: 'success', result: null }))
-        .catch((err) =>
-          dispatch({
-            type: 'on_error',
-            error: new Error('Failed to confirm', { cause: err }),
-          })
-        );
-    },
-    [dispatch]
-  );
+  const runAsync = useCallback((fn: () => Promise<T | null>) => {
+    dispatch({ type: 'start_loading' });
+    fn()
+      .then((result) => dispatch({ type: 'success', result }))
+      .catch((err) =>
+        dispatch({
+          type: 'on_error',
+          error: new Error('Failed to confirm', { cause: err }),
+        })
+      );
+  }, []);
 
   const resetAsync = useCallback(() => {
     dispatch({ type: 'reset' });
