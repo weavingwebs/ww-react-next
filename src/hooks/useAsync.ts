@@ -80,7 +80,7 @@ function loadingReducer<T>(
 export function useAsync<T>(
   defaultState: Omit<LoadingReducerState<T>, 'error'>
 ) {
-  const [state, dispatch] = useReducer(loadingReducer, {
+  const [state, dispatch] = useReducer(loadingReducer<T>, {
     ...defaultState,
     error: null,
   });
