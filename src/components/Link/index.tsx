@@ -42,6 +42,8 @@ export const Link: FC<LinkProps> = ({
         }
       }}
       {...props}
-    />
+    >
+      {children}
+    </NextLink>
   );
 };
