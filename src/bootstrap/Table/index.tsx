@@ -3,11 +3,11 @@ import clsx from 'clsx';
 
 type TableProps = PropsWithChildren & {
   // Tip: Use <><HeaderCell>Column Name</HeaderCell>...</>
-  columns?: ReactNode;
-  noStripes?: boolean;
+  columns: ReactNode;
   notResponsive?: boolean;
   rowHover?: boolean;
   size?: 'sm';
+  striped?: boolean;
   tableClassName?: string;
   tbodyClassName?: string;
   theadClassName?: string;
@@ -17,7 +17,7 @@ type TableProps = PropsWithChildren & {
 export const Table: FC<TableProps> = ({
   columns,
   rowHover,
-  noStripes,
+  striped,
   size,
   tableClassName,
   theadClassName,
@@ -30,7 +30,7 @@ export const Table: FC<TableProps> = ({
       className={clsx(
         'table',
         {
-          'table-striped': !noStripes,
+          'table-striped': striped,
           'table-hover': rowHover,
         },
         size && `table-${size}`,
