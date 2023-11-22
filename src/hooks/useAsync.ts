@@ -87,17 +87,18 @@ export function useAsync<T>(
 
   const runAsync = useCallback((fn: () => Promise<T | null>) => {
     dispatch({ type: 'start_loading' });
-    fn()
+    return fn()
       .then((result) => {
         dispatch({ type: 'success', result });
         return result;
       })
-      .catch((err) =>
+      .catch((err) => {
         dispatch({
           type: 'on_error',
           error: new Error('Failed to confirm', { cause: err }),
-        })
-      );
+        });
+        throw err;
+      });
   }, []);
 
   const resetAsync = useCallback(() => {
