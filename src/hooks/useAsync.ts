@@ -88,7 +88,10 @@ export function useAsync<T>(
   const runAsync = useCallback((fn: () => Promise<T | null>) => {
     dispatch({ type: 'start_loading' });
     fn()
-      .then((result) => dispatch({ type: 'success', result }))
+      .then((result) => {
+        dispatch({ type: 'success', result });
+        return result;
+      })
       .catch((err) =>
         dispatch({
           type: 'on_error',
