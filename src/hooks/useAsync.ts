@@ -46,6 +46,7 @@ function loadingReducer<T>(
     case 'on_error': {
       return {
         ...s,
+        result: null,
         isLoading: false,
         error: a.error,
       };
