@@ -90,14 +90,14 @@ export function useAsync<T>(
     return fn()
       .then((result) => {
         dispatch({ type: 'success', result });
-        return result;
+        return { result, error: null };
       })
-      .catch((err) => {
+      .catch((error) => {
         dispatch({
           type: 'on_error',
-          error: new Error('Failed to confirm', { cause: err }),
+          error,
         });
-        throw err;
+        return { result: null, error };
       });
   }, []);
 
