@@ -69,7 +69,7 @@ export const ConfirmModal: FC<ConfirmModalProps> = ({
             {isConfirming ? (
               <Loading size="sm" colour="light" />
             ) : (
-              confirmBtnLabel
+              confirmBtnLabel || 'Confirm'
             )}
           </Button>
         </div>
