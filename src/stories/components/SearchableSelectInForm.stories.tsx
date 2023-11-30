@@ -5,11 +5,9 @@ import { Controller, FormProvider, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Button } from '../../bootstrap/Button';
 import { FormLabel } from '../../bootstrap';
-import {
-  MOCK_OPTIONS,
-  SearchableSelect,
-} from '../../components/SearchableSelect';
+import { SearchableSelect } from '../../components/SearchableSelect';
 import { FormError } from '../../bootstrap/FormError';
+import { MOCK_OPTIONS } from '../mocks';
 
 const validationSchema = object({
   select: string().label('Select').required(),
