@@ -1,4 +1,5 @@
 import mockData from './mockData.json';
+import { SearchableSelectOption } from '../../components';
 
 export type PagingInput = {
   limit: number;
@@ -76,3 +77,86 @@ export const GenderLabels: Record<Gender, string> = {
   female: 'Female',
   other: 'Other',
 };
+
+export const MOCK_OPTIONS: SearchableSelectOption[] = [
+  {
+    label: 'My first option',
+    value: '1',
+  },
+  {
+    label: 'My second option',
+    value: '2',
+  },
+  {
+    label: 'My third option',
+    value: '3',
+  },
+  {
+    label: 'My fourth option',
+    value: '4',
+  },
+  {
+    label: 'My fifth option',
+    value: '5',
+  },
+  {
+    label: 'My sixth option',
+    value: '6',
+  },
+  {
+    label: 'My seventh option',
+    value: '7',
+  },
+  {
+    label: 'My eighth option',
+    value: '8',
+  },
+  {
+    label: 'My ninth option',
+    value: '9',
+  },
+  {
+    label: 'My tenth option',
+    value: '10',
+  },
+  {
+    label: 'My eleventh option',
+    value: '11',
+  },
+  {
+    label: 'My twelfth option',
+    value: '12',
+  },
+  {
+    label: 'My thirteenth option',
+    value: '13',
+  },
+  {
+    label: 'My fourteenth option',
+    value: '14',
+  },
+  {
+    label: 'My fifteenth option',
+    value: '15',
+  },
+  {
+    label: 'My sixteenth option',
+    value: '16',
+  },
+  {
+    label: 'My seventeenth option',
+    value: '17',
+  },
+  {
+    label: 'My eighteenth option',
+    value: '18',
+  },
+  {
+    label: 'My nineteenth option',
+    value: '19',
+  },
+  {
+    label: 'My twentieth option',
+    value: '20',
+  },
+];

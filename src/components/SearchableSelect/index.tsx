@@ -6,115 +6,33 @@ import {
   useState,
 } from 'react';
 import Select, {
+  components,
   FormatOptionLabelMeta,
   SelectInstance,
-  components,
 } from 'react-select';
 import clsx from 'clsx';
 import { FaSearch } from 'react-icons/fa';
 
-type Option = {
+export type SearchableSelectOption = {
   label: string;
   value: string;
 };
-
-export const MOCK_OPTIONS: Option[] = [
-  {
-    label: 'My first option',
-    value: '1',
-  },
-  {
-    label: 'My second option',
-    value: '2',
-  },
-  {
-    label: 'My third option',
-    value: '3',
-  },
-  {
-    label: 'My fourth option',
-    value: '4',
-  },
-  {
-    label: 'My fifth option',
-    value: '5',
-  },
-  {
-    label: 'My sixth option',
-    value: '6',
-  },
-  {
-    label: 'My seventh option',
-    value: '7',
-  },
-  {
-    label: 'My eighth option',
-    value: '8',
-  },
-  {
-    label: 'My ninth option',
-    value: '9',
-  },
-  {
-    label: 'My tenth option',
-    value: '10',
-  },
-  {
-    label: 'My eleventh option',
-    value: '11',
-  },
-  {
-    label: 'My twelfth option',
-    value: '12',
-  },
-  {
-    label: 'My thirteenth option',
-    value: '13',
-  },
-  {
-    label: 'My fourteenth option',
-    value: '14',
-  },
-  {
-    label: 'My fifteenth option',
-    value: '15',
-  },
-  {
-    label: 'My sixteenth option',
-    value: '16',
-  },
-  {
-    label: 'My seventeenth option',
-    value: '17',
-  },
-  {
-    label: 'My eighteenth option',
-    value: '18',
-  },
-  {
-    label: 'My nineteenth option',
-    value: '19',
-  },
-  {
-    label: 'My twentieth option',
-    value: '20',
-  },
-];
 
 type SearchableSelectProps = {
   autoFocus?: boolean;
   className?: string;
   formatOptionLabel?: (
-    data: Option,
-    formatOptionLabelMeta: FormatOptionLabelMeta<Option>
+    data: SearchableSelectOption,
+    formatOptionLabelMeta: FormatOptionLabelMeta<SearchableSelectOption>
   ) => ReactNode;
   getOptions:
-    | Option[]
+    | SearchableSelectOption[]
     | ((where: {
         id?: string | null;
         inputValue?: string | null;
         limit: number;
-      }) => Promise<Option[]>);
+      }) => Promise<SearchableSelectOption[]>);
+  inputClassName?: string;
   inputId: string;
   // Something that can be used to show that a filter is currently active.
   isActive?: boolean;
@@ -125,7 +43,7 @@ type SearchableSelectProps = {
 };
 
 export const SearchableSelect = forwardRef<
-  SelectInstance<Option>,
+  SelectInstance<SearchableSelectOption>,
   SearchableSelectProps
 >(
   (
@@ -138,19 +56,22 @@ export const SearchableSelect = forwardRef<
       formatOptionLabel,
       value,
       className,
+      inputClassName,
       autoFocus,
       placeholder,
     },
     ref
   ) => {
-    const [selected, setSelected] = useState<Option | null>(null);
+    const [selected, setSelected] = useState<SearchableSelectOption | null>(
+      null
+    );
 
     // @todo: debounce.
     const [inputValue, setInputValue] = useState('');
 
     const needsToFetchOptions = !Array.isArray(getOptions);
 
-    const [options, setOptions] = useState<Option[]>(
+    const [options, setOptions] = useState<SearchableSelectOption[]>(
       needsToFetchOptions ? [] : getOptions
     );
 
@@ -231,7 +152,13 @@ export const SearchableSelect = forwardRef<
           onBlur={onBlur}
           formatOptionLabel={formatOptionLabel}
           classNames={{
-            control: () => (isActive ? 'border-primary' : ''),
+            control: () => clsx(inputClassName, { 'border-primary': isActive }),
+            container: () => 'p-0',
+            valueContainer: () => 'p-0',
+            singleValue: () => 'p-0',
+            input: () => 'p-0 m-0',
+            indicatorsContainer: () => 'p-0',
+            clearIndicator: () => 'p-0',
           }}
           styles={{
             menu: (baseStyles) => ({
@@ -242,7 +169,7 @@ export const SearchableSelect = forwardRef<
           components={{
             DropdownIndicator: needsToFetchOptions
               ? // eslint-disable-next-line react/no-unstable-nested-components
-                () => <FaSearch className="me-4" size={15} />
+                () => <FaSearch className="ms-2" size={15} />
               : undefined,
             IndicatorSeparator: needsToFetchOptions ? () => null : undefined,
             LoadingMessage: needsToFetchOptions ? () => null : undefined,
