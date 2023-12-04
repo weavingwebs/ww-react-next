@@ -48,14 +48,16 @@ export const ConfirmModal: FC<ConfirmModalProps> = ({
         <BootstrapModal.Title>{titleLine}</BootstrapModal.Title>
       </BootstrapModal.Header>
       <BootstrapModal.Body>
-        {confirmLine}
+        {confirmLine && <div className="mb-3">{confirmLine}</div>}
 
-        <ErrorMessage error={error} className="mt-3" />
+        <ErrorMessage error={error} />
 
         <div className="d-flex justify-content-end">
-          <Button variant="danger" outlined onClick={onCancel}>
-            {cancelText || 'Cancel'}
-          </Button>
+          {!isConfirming && (
+            <Button variant="danger" outlined onClick={onCancel}>
+              {cancelText || 'Cancel'}
+            </Button>
+          )}
           <Button
             variant={isPositiveAction ? 'success' : 'danger'}
             onClick={(ev) => {
