@@ -29,7 +29,7 @@ export const ConfirmModalExample: FC = () => {
           Open modal (successful confirm)
         </Button>
       </div>
-      <div>
+      <div className="mb-3">
         <Button
           variant="primary"
           onClick={() =>
@@ -45,6 +45,27 @@ export const ConfirmModalExample: FC = () => {
           }
         >
           Open modal (failed confirm)
+        </Button>
+      </div>
+      <div>
+        <Button
+          variant="primary"
+          onClick={() =>
+            confirmModalState.showConfirm({
+              dontAutoCloseOnSuccess: true,
+              onConfirm: async () => {
+                await new Promise((resolve) => {
+                  setTimeout(() => {
+                    // eslint-disable-next-line no-alert
+                    alert('Confirmed successfully');
+                    resolve(null);
+                  }, 500);
+                });
+              },
+            })
+          }
+        >
+          {`Open modal (successful confirm & don't auto-close on success)`}
         </Button>
       </div>
 

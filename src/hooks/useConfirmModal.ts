@@ -6,6 +6,7 @@ export type ConfirmModalConfig = {
   confirmBtnLabel?: ReactNode;
   confirmButtonStyle?: CSSProperties;
   confirmLine?: ReactNode;
+  dontAutoCloseOnSuccess?: boolean;
   isPositiveAction?: boolean;
   onConfirm: () => Promise<void>;
   size?: 'lg' | 'sm' | 'xl';

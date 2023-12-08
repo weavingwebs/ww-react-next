@@ -16,6 +16,7 @@ export const ConfirmModal: FC<ConfirmModalProps> = ({
   isPositiveAction,
   isOpen,
   onCancel,
+  dontAutoCloseOnSuccess,
 }) => {
   const {
     isLoading: isConfirming,
@@ -45,7 +46,9 @@ export const ConfirmModal: FC<ConfirmModalProps> = ({
       size={size}
     >
       <BootstrapModal.Header closeButton={!isConfirming}>
-        <BootstrapModal.Title>{titleLine}</BootstrapModal.Title>
+        <BootstrapModal.Title>
+          {titleLine || 'Are you sure?'}
+        </BootstrapModal.Title>
       </BootstrapModal.Header>
       <BootstrapModal.Body>
         {confirmLine && <div className="mb-3">{confirmLine}</div>}
@@ -62,11 +65,16 @@ export const ConfirmModal: FC<ConfirmModalProps> = ({
             variant={isPositiveAction ? 'success' : 'danger'}
             onClick={(ev) => {
               ev.preventDefault();
-              runAsync(onConfirm);
+              runAsync(onConfirm).then((res) => {
+                // Close if promise didn't error and we didn't opt out of auto closing via prop.
+                if (!res.error && !dontAutoCloseOnSuccess) {
+                  onCancel();
+                }
+              });
             }}
             disabled={isConfirming}
             className="ms-2"
-            style={confirmButtonStyle}
+            style={{ minWidth: '85px', ...confirmButtonStyle }}
           >
             {isConfirming ? (
               <Loading size="sm" colour="light" />
