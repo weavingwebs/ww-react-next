@@ -16,6 +16,7 @@ type BootstrapColourVariants =
 
 type BootstrapButtonProps = {
   className?: string;
+  disabled?: boolean;
   fullWidth?: boolean;
   isActive?: boolean;
   outlined?: boolean;
@@ -34,6 +35,7 @@ function withButtonClasses<P = object>(
     fullWidth,
     outlined,
     isActive,
+    disabled,
     ...props
   }) => (
     <Component
@@ -42,9 +44,10 @@ function withButtonClasses<P = object>(
         size && `btn-${size}`,
         fullWidth && 'w-100',
         outlined ? `btn-outline-${variant}` : `btn-${variant}`,
-        { active: isActive },
+        { active: isActive, disabled },
         className
       )}
+      aria-disabled={disabled}
       {...(props as unknown as P)}
     />
   );
@@ -59,7 +62,7 @@ export type LinkButtonProps = React.PropsWithChildren &
   BootstrapButtonProps;
 
 export const LinkButton: React.FC<LinkButtonProps> = withButtonClasses(
-  (props) => <Link role="button" noLinkClass {...props} />
+  (props) => <Link role="button" {...props} />
 );
 
 export type ButtonProps = BootstrapButtonProps &
