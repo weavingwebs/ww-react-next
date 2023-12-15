@@ -12,6 +12,7 @@ import {
 import { FormProvider, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { format, isValid, parse } from 'date-fns';
+import { formatInTimeZone, toDate } from 'date-fns-tz';
 import { HookFormInput } from '../../components/HookFormInput';
 import { Button } from '../../bootstrap/Button';
 import {
@@ -30,12 +31,13 @@ import { useMemoOnce } from '../../hooks/useMemoOnce';
 // Define the shape of the form values, overriding any props as needed for compatibility with HTML inputs.
 type FormValues = Omit<
   CustomerInput,
-  'dateOfBirth' | 'archived' | 'age' | 'gender'
+  'dateOfBirth' | 'expiresAt' | 'archived' | 'age' | 'gender'
 > & {
   // We don't want to default number to 0, we want it not set (for new).
   age: number | null;
   archived: boolean;
   dateOfBirth: Date | null;
+  expiresAt: Date | null;
   gender: Gender | '';
 };
 
@@ -45,6 +47,7 @@ const fragmentToValues = (
   opts?: { ignoreErrors?: boolean }
 ): FormValues => {
   let dateOfBirth: Date | null = null;
+  let expiresAt: Date | null = null;
 
   if (fragment.dateOfBirth) {
     dateOfBirth = parse(fragment.dateOfBirth, 'yyyy-MM-dd', new Date());
@@ -57,11 +60,25 @@ const fragmentToValues = (
       }
     }
   }
+
+  if (fragment.expiresAt) {
+    // Must use toDate from date-fns-tz.
+    expiresAt = toDate(fragment.expiresAt);
+    if (!isValid(expiresAt)) {
+      expiresAt = null;
+      if (!opts?.ignoreErrors) {
+        throw new Error(
+          `failed to parse expiresAt from '${fragment.expiresAt}'`
+        );
+      }
+    }
+  }
   return {
     age: fragment.age,
     company: fragment.company,
     name: fragment.name,
     dateOfBirth,
+    expiresAt,
     gender: fragment.gender || '',
     phone: fragment.phone,
     archived: fragment.archived,
@@ -75,6 +92,9 @@ const valuesToInput = (values: FormValues): CustomerInput => {
   if (!values.dateOfBirth) {
     throw new Error('dateOfBirth is null');
   }
+  if (!values.expiresAt) {
+    throw new Error('expiresAt is null');
+  }
   if (!values.age) {
     throw new Error('age is null');
   }
@@ -87,6 +107,11 @@ const valuesToInput = (values: FormValues): CustomerInput => {
     company: values.company,
     name: values.name,
     dateOfBirth: format(values.dateOfBirth, 'yyyy-MM-dd'),
+    expiresAt: formatInTimeZone(
+      values.expiresAt,
+      'UTC',
+      `yyyy-MM-dd'T'HH:mm:ss'Z'`
+    ),
     gender: values.gender,
     phone: values.phone,
     archived: values.archived,
@@ -102,6 +127,10 @@ const validationSchema: ObjectSchema<FormValues> = object({
   company: string().label('Company').required().max(128),
   dateOfBirth: date()
     .label('Date of birth')
+    .required()
+    .transform(transformEmptyToNull),
+  expiresAt: date()
+    .label('Expires at')
     .required()
     .transform(transformEmptyToNull),
   gender: mixed<Gender>()
@@ -123,6 +152,7 @@ const initialValues: FormValues = {
   age: null,
   archived: false,
   dateOfBirth: null,
+  expiresAt: null,
 };
 
 type CreateUpdateFormProps = {
@@ -232,6 +262,14 @@ export const CreateUpdateForm: FC<CreateUpdateFormProps> = ({
           className="mb-3"
         />
 
+        <HookFormDateInput<FormValues>
+          type="datetime-local"
+          name="expiresAt"
+          label="Expires at"
+          inputClassName="form-control"
+          className="mb-3"
+        />
+
         <HookFormInput<FormValues>
           type="tel"
           name="phone"
@@ -291,6 +329,7 @@ export default {
             name: input.name,
             age: input.age,
             dateOfBirth: input.dateOfBirth,
+            expiresAt: input.expiresAt,
             phone: input.phone,
             archived: input.archived,
             company: input.company,

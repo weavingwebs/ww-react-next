@@ -52,8 +52,10 @@ export type CustomerFragment = {
   age: number;
   archived: boolean;
   company: string;
-  // yyyy-mm-dd format.
+  // server date format (yyyy-MM-dd).
   dateOfBirth: string;
+  // server datetime format (yyyy-MM-dd'T'HH:mm:ss'Z').
+  expiresAt: string;
   // An optional enum.
   gender: Gender | null;
   // GUID assigned by the server.
