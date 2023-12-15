@@ -8,9 +8,12 @@ import {
 import { CSSProperties, ReactElement, ReactNode } from 'react';
 import clsx from 'clsx';
 import { format, isDate } from 'date-fns';
+import { formatInTimeZone } from 'date-fns-tz';
 import { FormLabel } from '../../bootstrap';
 import { FormError } from '../../bootstrap/FormError';
 import { FormText } from '../../bootstrap/FormText';
+
+type HookFormDateInputType = 'date' | 'datetime-local';
 
 type FormInputProps<T extends FieldValues> = {
   autoComplete?: string;
@@ -27,9 +30,12 @@ type FormInputProps<T extends FieldValues> = {
   readOnly?: boolean;
   required?: boolean;
   style?: CSSProperties;
+  // Type is not required for backwards compatibility.
+  type?: HookFormDateInputType;
 };
 
 // This relies on using storing date as Date | null in the form values.
+// NOTE: If type is not set, it defaults to 'date'.
 export function HookFormDateInput<T extends FieldValues>({
   name,
   control: _control,
@@ -42,6 +48,12 @@ export function HookFormDateInput<T extends FieldValues>({
   required,
   ...inputProps
 }: FormInputProps<T>): ReactElement | null {
+  // If not set, default to 'date' (so type can be an optional prop for backwards compat).
+  let type: HookFormDateInputType = 'date';
+  if (inputProps.type) {
+    type = inputProps.type;
+  }
+
   const formContext = useFormContext<T>();
   let control = _control;
   if (!_control) {
@@ -68,7 +80,11 @@ export function HookFormDateInput<T extends FieldValues>({
   let value = '';
   if (_rawValue) {
     if (isDate(_rawValue)) {
-      value = format(_rawValue, 'yyyy-MM-dd');
+      if (type === 'datetime-local') {
+        value = formatInTimeZone(_rawValue, 'UTC', `yyyy-MM-dd'T'HH:mm:ss`);
+      } else {
+        value = format(_rawValue, 'yyyy-MM-dd');
+      }
     } else {
       value = _rawValue;
     }
@@ -92,7 +108,8 @@ export function HookFormDateInput<T extends FieldValues>({
         <input
           {...inputProps}
           {...field}
-          type="date"
+          // Must override type.
+          type={type}
           value={value}
           id={name}
           className={clsx(inputClassName, { 'is-invalid': error })}
