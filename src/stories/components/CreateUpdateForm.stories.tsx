@@ -201,6 +201,9 @@ export const CreateUpdateForm: FC<CreateUpdateFormProps> = ({
   return (
     <FormProvider {...formMethods}>
       <form
+        // We are validating using yup so we don't want HTML validation get in our way.
+        // e.g. setting type="email" or required would trigger HTML validation.
+        noValidate
         onSubmit={handleSubmit(async (values) => {
           // Reset error every submit.
           setSubmitError(null);
@@ -230,6 +233,7 @@ export const CreateUpdateForm: FC<CreateUpdateFormProps> = ({
         <ErrorMessage error={loadError} />
 
         <HookFormInput<FormValues>
+          required
           type="text"
           name="name"
           label="Name"
@@ -239,6 +243,7 @@ export const CreateUpdateForm: FC<CreateUpdateFormProps> = ({
         />
 
         <HookFormInput<FormValues>
+          required
           type="text"
           name="company"
           label="Company"
@@ -247,6 +252,7 @@ export const CreateUpdateForm: FC<CreateUpdateFormProps> = ({
         />
 
         <HookFormInput<FormValues>
+          required
           // We use a 'tel' for numbers so that mobile gets the numpad, it has no difference vs text on desktop.
           type="tel"
           name="age"
@@ -256,6 +262,7 @@ export const CreateUpdateForm: FC<CreateUpdateFormProps> = ({
         />
 
         <HookFormDateInput<FormValues>
+          required
           name="dateOfBirth"
           label="Date of Birth"
           inputClassName="form-control"
@@ -263,6 +270,7 @@ export const CreateUpdateForm: FC<CreateUpdateFormProps> = ({
         />
 
         <HookFormDateInput<FormValues>
+          required
           type="datetime-local"
           name="expiresAt"
           label="Expires at"
@@ -271,6 +279,7 @@ export const CreateUpdateForm: FC<CreateUpdateFormProps> = ({
         />
 
         <HookFormInput<FormValues>
+          required
           type="tel"
           name="phone"
           label="Phone number"
@@ -279,6 +288,7 @@ export const CreateUpdateForm: FC<CreateUpdateFormProps> = ({
         />
 
         <HookFormInput<FormValues>
+          required
           as="select"
           name="gender"
           label="Gender"
