@@ -1,17 +1,14 @@
-import { Meta } from '@storybook/react';
-import { FC } from 'react';
+import { Meta, StoryObj } from '@storybook/react';
 import { object, string } from 'yup';
 import { FormProvider, useForm, useWatch } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Button } from '../../bootstrap/Button';
-import { FormError } from '../../bootstrap/FormError';
-import { FormLabel } from '../../bootstrap';
+import { Button, BsFormError, BsFormLabel } from '../../../bootstrap';
 
 const validationSchema = object({
   radio: string().label('Radio').required().min(1),
 });
 
-export const RadioInputs: FC = () => {
+export const RadiosUsingRawInputs: StoryObj = () => {
   const formMethods = useForm({
     resolver: yupResolver(validationSchema),
     defaultValues: { radio: '' }, // 'Sunny' to test default.
@@ -41,9 +38,9 @@ export const RadioInputs: FC = () => {
       >
         <div>
           <fieldset>
-            <FormLabel as="legend" required>
+            <BsFormLabel as="legend" required>
               What was the weather like?
-            </FormLabel>
+            </BsFormLabel>
 
             <div className="form-check">
               <label className="form-check-label" htmlFor="radioSunny">
@@ -86,7 +83,7 @@ export const RadioInputs: FC = () => {
           </fieldset>
 
           {errors.radio && (
-            <FormError id="selectError">{errors.radio.message}</FormError>
+            <BsFormError id="selectError" error={errors.radio} />
           )}
         </div>
 
@@ -103,7 +100,9 @@ export const RadioInputs: FC = () => {
   );
 };
 
+RadiosUsingRawInputs.storyName = 'Radios: raw inputs';
+
 export default {
-  title: 'Components/RadioInputs',
-  component: RadioInputs,
-} as Meta<typeof RadioInputs>;
+  title: 'Examples/Forms',
+  component: RadiosUsingRawInputs,
+} as Meta<typeof RadiosUsingRawInputs>;
