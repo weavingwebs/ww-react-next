@@ -32,8 +32,13 @@ export const RadioInputs: FC = () => {
 
   return (
     <FormProvider {...formMethods}>
-      {/* eslint-disable-next-line no-alert */}
-      <form onSubmit={handleSubmit((values) => alert(JSON.stringify(values)))}>
+      <form
+        // We are validating using yup so we don't want HTML validation get in our way.
+        // e.g. setting type="email" or required would trigger HTML validation.
+        noValidate
+        // eslint-disable-next-line no-alert
+        onSubmit={handleSubmit((values) => alert(JSON.stringify(values)))}
+      >
         <div>
           <fieldset>
             <FormLabel as="legend" required>
