@@ -96,5 +96,6 @@ module.exports = {
     // react/no-array-index-key
     // jsx-a11y/label-has-associated-control
     'arrow-body-style': 'off',
+    'no-underscore-dangle': 'off',
   },
 };
