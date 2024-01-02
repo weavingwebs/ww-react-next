@@ -1,7 +1,7 @@
 import { makeArrayFromRange } from '../../util';
 import { TableResults, TableResultsProps } from '../../components/TableResults';
 
-type TableResultsWithPlaceholderProps<T> = TableResultsProps<T> & {
+export type TableResultsWithPlaceholderProps<T> = TableResultsProps<T> & {
   placeholderRowCount: number;
 };
 

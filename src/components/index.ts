@@ -7,6 +7,4 @@ export * from './Redirect';
 export * from './SearchableSelect';
 export * from './TableResults';
 export * from './ConfirmModal';
-
-// @todo: remove?
-export * from './Example';
+export * from './types';

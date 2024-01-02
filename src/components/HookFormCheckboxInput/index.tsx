@@ -25,6 +25,7 @@ type HookFormCheckboxInputProps<T extends FieldValues> = {
   topPadding?: boolean;
 };
 
+/** @deprecated Use BsFormCheckbox instead. */
 export function HookFormCheckboxInput<T extends FieldValues>({
   required,
   label,

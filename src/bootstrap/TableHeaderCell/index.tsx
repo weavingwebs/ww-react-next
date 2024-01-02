@@ -1,7 +1,10 @@
 import { FC, ThHTMLAttributes } from 'react';
 import clsx from 'clsx';
 
-type HeaderCellProps = Omit<ThHTMLAttributes<HTMLTableCellElement>, 'scope'>;
+export type HeaderCellProps = Omit<
+  ThHTMLAttributes<HTMLTableCellElement>,
+  'scope'
+>;
 
 export const TableHeaderCell: FC<HeaderCellProps> = ({
   children,

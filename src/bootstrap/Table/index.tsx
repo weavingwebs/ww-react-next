@@ -1,7 +1,7 @@
 import { FC, PropsWithChildren, ReactNode } from 'react';
 import clsx from 'clsx';
 
-type TableProps = PropsWithChildren & {
+export type TableProps = PropsWithChildren & {
   // Tip: Use <><HeaderCell>Column Name</HeaderCell>...</>
   columns: ReactNode;
   notResponsive?: boolean;

@@ -1,71 +1,86 @@
 import {
-  Control,
   FieldValues,
   Path,
   useController,
   useFormContext,
 } from 'react-hook-form';
-import { CSSProperties, ReactElement, ReactNode } from 'react';
+import {
+  ComponentType,
+  CSSProperties,
+  ReactElement,
+  ReactNode,
+  useId,
+} from 'react';
 import clsx from 'clsx';
 import { format, isDate } from 'date-fns';
 import { formatInTimeZone } from 'date-fns-tz';
-import { FormLabel } from '../../bootstrap';
-import { FormError } from '../../bootstrap/FormError';
-import { FormText } from '../../bootstrap/FormText';
+import {
+  FormErrorComponentProps,
+  FormLabelProps,
+  HelpTextComponentProps,
+} from '../types';
 
-type HookFormDateInputType = 'date' | 'datetime-local';
+type FormDateType = 'date' | 'datetime-local';
 
-type FormInputProps<T extends FieldValues> = {
+export type FormDateProps<T extends FieldValues> = {
+  FormErrorComponent: ComponentType<FormErrorComponentProps>;
+  FormLabelComponent: ComponentType<FormLabelProps>;
+  HelpTextComponent: ComponentType<HelpTextComponentProps>;
   autoComplete?: string;
   autoFocus?: boolean;
+  // Top level div className.
   className?: string;
-  control?: Control<T>;
   disabled?: boolean;
   helpText?: string;
+  // Input className.
   inputClassName?: string;
-  inputPrependText?: string;
+  inputInvalidClassName?: string;
+  // Pre-input JSX (inside the input wrapper i.e. for input groups).
+  inputPrefix?: ReactNode;
+  // Post-input JSX (inside the input wrapper i.e. for input groups).
+  inputSuffix?: ReactNode;
+  // Input wrapper div className.
+  inputWrapperClassName?: string;
   label?: ReactNode;
+  // eslint-disable-next-line typescript-sort-keys/interface
   labelClassName?: string;
   name: Path<T>;
+  prefix?: ReactNode;
   readOnly?: boolean;
   required?: boolean;
   style?: CSSProperties;
   // Type is not required for backwards compatibility.
-  type?: HookFormDateInputType;
+  type?: FormDateType;
 };
 
-/** @deprecated use BsFormDate.
- This relies on using storing date as Date | null in the form values.
- NOTE: If type is not set, it defaults to 'date'.
-*/
-export function HookFormDateInput<T extends FieldValues>({
+// This relies on using storing date as Date | null in the form values.
+// NOTE: If type is not set, it defaults to 'date'.
+export function FormDate<T extends FieldValues>({
+  prefix,
+  FormErrorComponent,
+  FormLabelComponent,
+  HelpTextComponent,
   name,
-  control: _control,
   label,
   className,
   inputClassName,
+  inputInvalidClassName,
   labelClassName,
   helpText,
-  inputPrependText,
+  inputPrefix,
+  inputWrapperClassName,
+  inputSuffix,
   required,
   ...inputProps
-}: FormInputProps<T>): ReactElement | null {
+}: FormDateProps<T>): ReactElement | null {
   // If not set, default to 'date' (so type can be an optional prop for backwards compat).
-  let type: HookFormDateInputType = 'date';
+  let type: FormDateType = 'date';
   if (inputProps.type) {
     type = inputProps.type;
   }
 
-  const formContext = useFormContext<T>();
-  let control = _control;
-  if (!_control) {
-    if (!formContext) {
-      throw new Error(
-        'You must either set the control prop or wrap this component with a FormProvider'
-      );
-    }
-    control = formContext.control;
-  }
+  const id = useId();
+  const { control } = useFormContext<T>();
 
   const {
     field: { value: _rawValue, ...field },
@@ -93,20 +108,18 @@ export function HookFormDateInput<T extends FieldValues>({
   }
 
   return (
-    <div className={clsx(className, 'has-validation')} aria-live="polite">
+    <div className={className} aria-live="polite">
       {label && (
-        <FormLabel
-          htmlFor={name}
+        <FormLabelComponent
+          htmlFor={id}
           required={required}
-          className={clsx(labelClassName)}
+          className={labelClassName}
         >
           {label}
-        </FormLabel>
+        </FormLabelComponent>
       )}
-      <div className={clsx({ 'input-group': inputPrependText })}>
-        {inputPrependText && (
-          <span className="input-group-text">{inputPrependText}</span>
-        )}
+      <div className={inputWrapperClassName}>
+        {inputPrefix}
         <input
           {...inputProps}
           {...field}
@@ -120,8 +133,10 @@ export function HookFormDateInput<T extends FieldValues>({
           required={required}
         />
       </div>
-      {helpText && <FormText ariaDescribedBy={name}>{helpText}</FormText>}
-      {error && <FormError id={`${name}Error`}>{error.message}</FormError>}
+      {helpText && (
+        <HelpTextComponent ariaDescribedBy={id}>{helpText}</HelpTextComponent>
+      )}
+      {error && <FormErrorComponent id={`${name}Error`} error={error} />}
     </div>
   );
 }
