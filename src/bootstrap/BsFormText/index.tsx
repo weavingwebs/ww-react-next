@@ -6,8 +6,8 @@ export const BsFormText: FC<HelpTextComponentProps> = ({
   children,
 }) => {
   return (
-    <p className="form-text" aria-describedby={ariaDescribedBy}>
+    <span className="form-text" aria-describedby={ariaDescribedBy}>
       {children}
-    </p>
+    </span>
   );
 };
