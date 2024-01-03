@@ -1,29 +1,32 @@
 import {
-  Control,
   FieldValues,
   Path,
   useController,
   useFormContext,
 } from 'react-hook-form';
 import {
+  ComponentType,
   CSSProperties,
   HTMLInputTypeAttribute,
   JSX,
   ReactElement,
   ReactNode,
+  useId,
 } from 'react';
 import clsx from 'clsx';
-import { FormLabel } from '../../bootstrap';
-import { FormError } from '../../bootstrap/FormError';
-import { FormText } from '../../bootstrap/FormText';
+import {
+  FormErrorComponentProps,
+  FormLabelProps,
+  HelpTextComponentProps,
+} from '../types';
 
-type FormInputPropsSelect = {
+export type FormInputPropsSelect = {
   as: 'select';
   autoComplete?: string;
   children: ReactNode;
 };
 
-type FormInputPropsTextarea = {
+export type FormInputPropsTextarea = {
   as: 'textarea';
   autoCapitalize?: string;
   autoComplete?: string;
@@ -34,7 +37,7 @@ type FormInputPropsTextarea = {
   spellCheck?: 'true' | 'false';
 };
 
-type FormInputPropsInput = {
+export type FormInputPropsInput = {
   as?: undefined | 'input';
   autoCapitalize?: string;
   autoComplete?: string;
@@ -46,51 +49,64 @@ type FormInputPropsInput = {
   type: Exclude<HTMLInputTypeAttribute, 'checkbox' | 'radio'>;
 };
 
-type FormInputProps<T extends FieldValues> = (
-  | FormInputPropsSelect
-  | FormInputPropsTextarea
-  | FormInputPropsInput
-) & {
+export type FormInputBaseProps<T extends FieldValues> = {
+  FormErrorComponent: ComponentType<FormErrorComponentProps>;
+  FormLabelComponent: ComponentType<FormLabelProps>;
+  HelpTextComponent: ComponentType<HelpTextComponentProps>;
   autoFocus?: boolean;
+  // Top level div className.
   className?: string;
-  control?: Control<T>;
   disabled?: boolean;
-  helpText?: string;
+  helpText?: ReactNode;
+  // Input className.
   inputClassName?: string;
-  inputPrependText?: string;
+  inputInvalidClassName?: string;
+  // Pre-input JSX (inside the input wrapper i.e. for input groups).
+  inputPrefix?: ReactNode;
+  // Post-input JSX (inside the input wrapper i.e. for input groups).
+  inputSuffix?: ReactNode;
+  // Input wrapper div className.
+  inputWrapperClassName?: string;
   label?: ReactNode;
   labelClassName?: string;
   max?: string | number;
   min?: string | number;
   name: Path<T>;
+  // Pre-input wrapper JSX (i.e. label spacer).
+  prefix?: ReactNode;
   required?: boolean;
   style?: CSSProperties;
 };
 
-/** @deprecated Use BsFormInput. */
-export function HookFormInput<T extends FieldValues>({
+export type FormInputProps<T extends FieldValues> = (
+  | FormInputPropsSelect
+  | FormInputPropsTextarea
+  | FormInputPropsInput
+) &
+  FormInputBaseProps<T>;
+
+export function FormInput<T extends FieldValues>({
+  prefix,
+  FormErrorComponent,
+  FormLabelComponent,
+  HelpTextComponent,
   name,
-  control: _control,
   required,
   label,
   className,
   inputClassName,
+  inputInvalidClassName,
   labelClassName,
   helpText,
   style,
-  inputPrependText,
+  inputPrefix,
+  inputWrapperClassName,
+  inputSuffix,
   ...asProps
 }: FormInputProps<T>): ReactElement | null {
-  const formContext = useFormContext<T>();
-  let control = _control;
-  if (!_control) {
-    if (!formContext) {
-      throw new Error(
-        'You must either set the control prop or wrap this component with a FormProvider'
-      );
-    }
-    control = formContext.control;
-  }
+  const id = useId();
+
+  const { control } = useFormContext<T>();
 
   const {
     field,
@@ -120,20 +136,19 @@ export function HookFormInput<T extends FieldValues>({
   const { as, ...inputProps } = asProps;
 
   return (
-    <div className={clsx(className, 'has-validation')} aria-live="polite">
+    <div className={className} aria-live="polite">
+      {prefix}
       {label && (
-        <FormLabel
-          htmlFor={name}
+        <FormLabelComponent
+          htmlFor={id}
           required={required}
-          className={clsx(labelClassName)}
+          className={labelClassName}
         >
           {label}
-        </FormLabel>
+        </FormLabelComponent>
       )}
-      <div className={clsx({ 'input-group': inputPrependText })}>
-        {inputPrependText && (
-          <span className="input-group-text">{inputPrependText}</span>
-        )}
+      <div className={inputWrapperClassName}>
+        {inputPrefix}
         <Component
           {...inputProps}
           {...field}
@@ -147,16 +162,19 @@ export function HookFormInput<T extends FieldValues>({
             field.onChange(value.trim());
             field.onBlur();
           }}
-          id={name}
-          className={clsx(inputClassName, { 'is-invalid': error })}
+          id={id}
+          className={clsx(inputClassName, error && inputInvalidClassName)}
           aria-invalid={error ? 'true' : 'false'}
           aria-errormessage={error ? `${name}Error` : undefined}
           style={style}
           required={required}
         />
+        {inputSuffix}
       </div>
-      {helpText && <FormText ariaDescribedBy={name}>{helpText}</FormText>}
-      {error && <FormError id={`${name}Error`}>{error.message}</FormError>}
+      {helpText && (
+        <HelpTextComponent ariaDescribedBy={id}>{helpText}</HelpTextComponent>
+      )}
+      {error && <FormErrorComponent id={`${name}Error`} error={error} />}
     </div>
   );
 }

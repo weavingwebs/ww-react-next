@@ -1,13 +1,4 @@
-import { FC, PropsWithChildren } from 'react';
+import { BsFormText } from '../BsFormText';
 
-type FormTextProps = PropsWithChildren & {
-  ariaDescribedBy?: string;
-};
-
-export const FormText: FC<FormTextProps> = ({ ariaDescribedBy, children }) => {
-  return (
-    <p className="form-text" aria-describedby={ariaDescribedBy}>
-      {children}
-    </p>
-  );
-};
+/** @deprecated use BsFormText instead. */
+export const FormText = BsFormText;

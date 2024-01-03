@@ -1,16 +1,14 @@
-import { Meta } from '@storybook/react';
-import { FC } from 'react';
+import { Meta, StoryObj } from '@storybook/react';
 import { array, object, string } from 'yup';
 import { FormProvider, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Button } from '../../bootstrap/Button';
-import { FormError } from '../../bootstrap/FormError';
+import { Button, FormError } from '../../../bootstrap';
 
 const validationSchema = object({
   checkbox: array(string()).label('Checkbox').required().min(1),
 });
 
-export const MultipleCheckboxesFormRawInputs: FC = () => {
+export const CheckboxesUsingRawInputs: StoryObj = () => {
   const formMethods = useForm({
     resolver: yupResolver(validationSchema),
     defaultValues: { checkbox: [] },
@@ -24,8 +22,13 @@ export const MultipleCheckboxesFormRawInputs: FC = () => {
 
   return (
     <FormProvider {...formMethods}>
-      {/* eslint-disable-next-line no-alert */}
-      <form onSubmit={handleSubmit((values) => alert(JSON.stringify(values)))}>
+      <form
+        // We are validating using yup so we don't want HTML validation get in our way.
+        // e.g. setting type="email" or required would trigger HTML validation.
+        noValidate
+        // eslint-disable-next-line no-alert
+        onSubmit={handleSubmit((values) => alert(JSON.stringify(values)))}
+      >
         <div>
           <div className="form-check">
             <label className="form-check-label" htmlFor="checkbox1">
@@ -92,7 +95,9 @@ export const MultipleCheckboxesFormRawInputs: FC = () => {
   );
 };
 
+CheckboxesUsingRawInputs.storyName = 'Checkboxes: raw inputs';
+
 export default {
-  title: 'Components/MultipleCheckboxesForm',
-  component: MultipleCheckboxesFormRawInputs,
-} as Meta<typeof MultipleCheckboxesFormRawInputs>;
+  title: 'Examples/Forms',
+  component: CheckboxesUsingRawInputs,
+} as Meta<typeof CheckboxesUsingRawInputs>;

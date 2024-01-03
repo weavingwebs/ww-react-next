@@ -1,7 +1,6 @@
 import * as React from 'react';
 import clsx from 'clsx';
-import { LinkProps } from 'next/link.js';
-import { Link } from '../../components/Link';
+import { Link, LinkProps } from '../../components/Link';
 
 // @todo: type is repeated.
 type BootstrapColourVariants =

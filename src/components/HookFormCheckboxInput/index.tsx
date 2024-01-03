@@ -23,9 +23,9 @@ type HookFormCheckboxInputProps<T extends FieldValues> = {
   name: Path<T>;
   required?: boolean;
   topPadding?: boolean;
-  value?: string;
 };
 
+/** @deprecated Use BsFormCheckbox instead. */
 export function HookFormCheckboxInput<T extends FieldValues>({
   required,
   label,
@@ -38,7 +38,6 @@ export function HookFormCheckboxInput<T extends FieldValues>({
   disabled,
   topPadding,
   control: _control,
-  value,
 }: HookFormCheckboxInputProps<T>): ReactElement | null {
   const id = useId();
 
@@ -70,13 +69,13 @@ export function HookFormCheckboxInput<T extends FieldValues>({
       <div className={clsx('form-check', formCheckClassName)}>
         <input
           {...field}
+          checked={field.value}
           type="checkbox"
           id={id}
           className={clsx('form-check-input', inputClassName)}
           aria-invalid={error ? 'true' : 'false'}
           aria-errormessage={error ? `${name}Error` : undefined}
           disabled={disabled}
-          value={value}
         />
         <FormLabel
           htmlFor={id}

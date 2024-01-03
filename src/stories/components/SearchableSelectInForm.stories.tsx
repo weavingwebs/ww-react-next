@@ -3,10 +3,8 @@ import { FC } from 'react';
 import { object, string } from 'yup';
 import { Controller, FormProvider, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Button } from '../../bootstrap/Button';
-import { FormLabel } from '../../bootstrap';
-import { SearchableSelect } from '../../components/SearchableSelect';
-import { FormError } from '../../bootstrap/FormError';
+import { Button, BsFormError, BsFormLabel } from '../../bootstrap';
+import { SearchableSelect } from '../../components';
 import { MOCK_OPTIONS } from '../mocks';
 
 const validationSchema = object({
@@ -33,12 +31,17 @@ export const SearchableSelectInForm: FC<SearchableSelectInFormProps> = ({
 
   return (
     <FormProvider {...formMethods}>
-      {/* eslint-disable-next-line no-alert */}
-      <form onSubmit={handleSubmit((values) => alert(JSON.stringify(values)))}>
+      <form
+        // We are validating using yup so we don't want HTML validation get in our way.
+        // e.g. setting type="email" or required would trigger HTML validation.
+        noValidate
+        // eslint-disable-next-line no-alert
+        onSubmit={handleSubmit((values) => alert(JSON.stringify(values)))}
+      >
         <div className="mb-3" aria-live="polite">
-          <FormLabel htmlFor="select" required>
+          <BsFormLabel htmlFor="select" required>
             Label
-          </FormLabel>
+          </BsFormLabel>
           <Controller
             control={control}
             name="select"
@@ -50,11 +53,12 @@ export const SearchableSelectInForm: FC<SearchableSelectInFormProps> = ({
                 value={value}
                 onChange={onChange}
                 onBlur={onBlur}
+                inputClassName="form-select"
               />
             )}
           />
           {errors.select && (
-            <FormError id="selectError">{errors.select.message}</FormError>
+            <BsFormError id="selectError" error={errors.select} />
           )}
         </div>
 

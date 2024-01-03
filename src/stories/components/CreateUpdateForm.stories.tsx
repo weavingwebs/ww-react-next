@@ -13,7 +13,6 @@ import { FormProvider, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { format, isValid, parse } from 'date-fns';
 import { formatInTimeZone, toDate } from 'date-fns-tz';
-import { HookFormInput } from '../../components/HookFormInput';
 import { Button } from '../../bootstrap/Button';
 import {
   CustomerFragment,
@@ -23,10 +22,11 @@ import {
 } from '../mocks';
 import { ErrorMessage, Loading } from '../../bootstrap';
 import { PreventDirtyFormNavigate } from '../../components/PreventDirtyFormNavigate';
-import { HookFormCheckboxInput } from '../../components/HookFormCheckboxInput';
-import { HookFormDateInput } from '../../components/HookFormDateInput';
 import { transformEmptyToNull } from '../../util/forms';
 import { useMemoOnce } from '../../hooks/useMemoOnce';
+import { BsFormInput } from '../../bootstrap/BsFormInput';
+import { BsFormDate } from '../../bootstrap/BsFormDate';
+import { BsFormCheckbox } from '../../bootstrap/BsFormCheckbox';
 
 // Define the shape of the form values, overriding any props as needed for compatibility with HTML inputs.
 type FormValues = Omit<
@@ -201,6 +201,9 @@ export const CreateUpdateForm: FC<CreateUpdateFormProps> = ({
   return (
     <FormProvider {...formMethods}>
       <form
+        // We are validating using yup so we don't want HTML validation get in our way.
+        // e.g. setting type="email" or required would trigger HTML validation.
+        noValidate
         onSubmit={handleSubmit(async (values) => {
           // Reset error every submit.
           setSubmitError(null);
@@ -229,7 +232,8 @@ export const CreateUpdateForm: FC<CreateUpdateFormProps> = ({
         <PreventDirtyFormNavigate />
         <ErrorMessage error={loadError} />
 
-        <HookFormInput<FormValues>
+        <BsFormInput<FormValues>
+          required
           type="text"
           name="name"
           label="Name"
@@ -238,7 +242,8 @@ export const CreateUpdateForm: FC<CreateUpdateFormProps> = ({
           className="mb-3"
         />
 
-        <HookFormInput<FormValues>
+        <BsFormInput<FormValues>
+          required
           type="text"
           name="company"
           label="Company"
@@ -246,7 +251,8 @@ export const CreateUpdateForm: FC<CreateUpdateFormProps> = ({
           className="mb-3"
         />
 
-        <HookFormInput<FormValues>
+        <BsFormInput<FormValues>
+          required
           // We use a 'tel' for numbers so that mobile gets the numpad, it has no difference vs text on desktop.
           type="tel"
           name="age"
@@ -255,14 +261,16 @@ export const CreateUpdateForm: FC<CreateUpdateFormProps> = ({
           className="mb-3"
         />
 
-        <HookFormDateInput<FormValues>
+        <BsFormDate<FormValues>
+          required
           name="dateOfBirth"
           label="Date of Birth"
           inputClassName="form-control"
           className="mb-3"
         />
 
-        <HookFormDateInput<FormValues>
+        <BsFormDate<FormValues>
+          required
           type="datetime-local"
           name="expiresAt"
           label="Expires at"
@@ -270,7 +278,8 @@ export const CreateUpdateForm: FC<CreateUpdateFormProps> = ({
           className="mb-3"
         />
 
-        <HookFormInput<FormValues>
+        <BsFormInput<FormValues>
+          required
           type="tel"
           name="phone"
           label="Phone number"
@@ -278,7 +287,8 @@ export const CreateUpdateForm: FC<CreateUpdateFormProps> = ({
           className="mb-3"
         />
 
-        <HookFormInput<FormValues>
+        <BsFormInput<FormValues>
+          required
           as="select"
           name="gender"
           label="Gender"
@@ -292,9 +302,9 @@ export const CreateUpdateForm: FC<CreateUpdateFormProps> = ({
               {label}
             </option>
           ))}
-        </HookFormInput>
+        </BsFormInput>
 
-        <HookFormCheckboxInput<FormValues>
+        <BsFormCheckbox<FormValues>
           name="archived"
           label="Archived"
           className="mb-3"
