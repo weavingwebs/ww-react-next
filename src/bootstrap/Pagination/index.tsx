@@ -8,6 +8,7 @@ type Props = {
   itemsPerPage: number;
   nextLabel?: ReactNode;
   onChange: (page: number) => void;
+  paginationClasName?: string;
   prevLabel?: ReactNode;
   totalItems: number;
 };
@@ -20,6 +21,7 @@ export const Pagination: FC<Props> = ({
   className,
   nextLabel,
   prevLabel,
+  paginationClasName,
 }) => {
   let totalPages = Math.ceil(totalItems / itemsPerPage);
   if (totalPages < 1) {
@@ -31,7 +33,7 @@ export const Pagination: FC<Props> = ({
 
   return (
     <nav className={className}>
-      <ul className="pagination pagination-sm">
+      <ul className={clsx('pagination pagination-sm', paginationClasName)}>
         <li className={clsx('page-item', { disabled: isFirstPage })}>
           <button
             type="button"
