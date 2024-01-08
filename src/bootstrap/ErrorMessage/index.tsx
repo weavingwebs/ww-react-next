@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { FC } from 'react';
+import { FC, PropsWithChildren } from 'react';
 import { FaExclamationTriangle } from 'react-icons/fa';
 
 function unwrapErrorToString(err: Error) {
@@ -10,7 +10,7 @@ function unwrapErrorToString(err: Error) {
   return errStr;
 }
 
-type ErrorMessageProps = {
+type ErrorMessageProps = PropsWithChildren & {
   className?: string;
   error: Error | null;
   prefix?: string;
@@ -25,6 +25,7 @@ export const ErrorMessage: FC<ErrorMessageProps> = ({
   className,
   prefix,
   reloadButton,
+  children,
 }) => {
   if (!error) {
     return null;
@@ -39,6 +40,7 @@ export const ErrorMessage: FC<ErrorMessageProps> = ({
     <div className={clsx('alert alert-danger', className)}>
       <FaExclamationTriangle className="me-2" />
       {errorMessage}
+      {children}
       {reloadButton && (
         <div className="mt-2">
           <button
