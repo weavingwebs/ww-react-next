@@ -1,5 +1,5 @@
 import { NextRouter } from 'next/router.js';
-import { useEffect, useMemo, useReducer, useState } from 'react';
+import { useCallback, useEffect, useMemo, useReducer, useState } from 'react';
 import isEqual from 'lodash/isEqual';
 import { ParsedUrlQueryInput } from 'node:querystring';
 
@@ -42,8 +42,15 @@ function filtersReducer<F extends {}>(s: F, a: Actions<F>): F {
 }
 
 type UseUrlFiltersInput<F extends {}, L extends F> = {
+  // defaultFilters are the initial form values (if no url params)
   defaultFilters: F;
+  // defaultLiveFilters are the initial url/live filters used to query the data
+  // (if no url params). They should usually extend defaultFilters (i.e. with
+  // extras such as page).
   defaultLiveFilters: L;
+  // fromQuery is only used if there are query params, otherwise
+  // defaultLiveFilters will be used directly.
+  // fromQuery is responsible for merging defaults itself.
   fromQuery: (params: UrlParams) => L;
   router: NextRouter;
   toQuery: (filters: L) => UrlParams;
@@ -56,7 +63,8 @@ export function useUrlFilters<F extends {}, L extends F>({
   toQuery,
   router,
 }: UseUrlFiltersInput<F, L>) {
-  const { query, isReady, replace } = router;
+  const { query, isReady } = router;
+
   const [filtersReady, setFiltersReady] = useState(false);
 
   const [filtersTemp, filtersTempDispatch] = useReducer(filtersReducer<F>, {
@@ -66,18 +74,27 @@ export function useUrlFilters<F extends {}, L extends F>({
     ...defaultLiveFilters,
   });
 
+  const replace = useCallback(
+    (newFilters: Partial<L>) => {
+      // Remove null or undefined from the url.
+      const newQuery: UrlParams = {};
+      Object.entries(toQuery({ ...filters, ...newFilters })).forEach(
+        ([k, v]) => {
+          if (v) {
+            newQuery[k] = v;
+          }
+        }
+      );
+      return router.replace({ query: newQuery });
+    },
+    [router]
+  );
+
   const updateLiveFilters = (newFilters: Partial<L>) => {
     filtersTempDispatch({ type: 'set_filters', filters: { ...newFilters } });
     _setFiltersDispatch({ type: 'set_filters', filters: { ...newFilters } });
 
-    // Remove null or undefined from the url.
-    const newQuery: UrlParams = {};
-    Object.entries(toQuery({ ...filters, ...newFilters })).forEach(([k, v]) => {
-      if (v) {
-        newQuery[k] = v;
-      }
-    });
-    void replace({ query: newQuery });
+    return replace(newFilters);
   };
 
   const resetFilters = () => {
@@ -85,7 +102,7 @@ export function useUrlFilters<F extends {}, L extends F>({
     filtersTempDispatch({ type: 'reset', filters: { ...defaultFilters } });
 
     // Set live filters & url.
-    updateLiveFilters({ ...defaultLiveFilters });
+    return updateLiveFilters({ ...defaultLiveFilters });
   };
 
   const updateTempFilters = (newFilters: Partial<F>) =>
@@ -99,8 +116,17 @@ export function useUrlFilters<F extends {}, L extends F>({
     if (!isReady) {
       return;
     }
-    updateLiveFilters(fromQuery(query));
-    setFiltersReady(true);
+    // @todo Figure out why the nextjs router.replace fails unless we delay it
+    //   until after this initial 'isReady' render.
+    const timeout = setTimeout(() => {
+      if (Object.keys(query).length) {
+        updateLiveFilters(fromQuery(query)).then(() => setFiltersReady(true));
+      } else {
+        replace(defaultLiveFilters).then(() => setFiltersReady(true));
+      }
+    }, 0);
+    // eslint-disable-next-line consistent-return
+    return () => clearTimeout(timeout);
   }, [isReady]);
 
   const hasFiltersApplied = useMemo(
