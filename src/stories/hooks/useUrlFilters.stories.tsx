@@ -4,10 +4,14 @@ import { useRouter } from 'next-router-mock';
 import { format } from 'date-fns';
 import { toDate } from 'date-fns-tz';
 import { MemoryRouterProvider } from 'next-router-mock/MemoryRouterProvider/next-13.5';
-import { FormLabel, FullPageLoading, Pagination } from '../../bootstrap';
+import {
+  BsFormLabel,
+  FullPageLoading,
+  Pagination,
+  TableResultsWithPlaceholder,
+} from '../../bootstrap';
 import { getData, MockDataQueryResult } from '../mocks';
 import { useUrlFiltersWithPage } from '../../hooks';
-import { TableResultsWithPlaceholder } from '../../bootstrap/TableResultsWithPlaceholder';
 
 const parseDateTimeFromServer = (dateTimeStr: string): Date =>
   // IMPORTANT: This must use date-fns-tz to convert to local timezone.
@@ -26,7 +30,7 @@ type LiveFilters = Filters & {
 
 // Note: these must be listed out one by one.
 const DEFAULT_FILTERS: Filters = {
-  name: null,
+  name: 'test',
 };
 
 const DEFAULT_LIVE_FILTERS: LiveFilters = { ...DEFAULT_FILTERS, page: 1 };
@@ -66,8 +70,11 @@ export const FullExampleWithPaging: FC<UrlParamsFilteredTableProps> = ({
       };
     },
     fromQuery: (query) => {
+      const nameFilter = (query.name as string) || null;
+
+      // If a url param is not present, we need to default it ourselves.
       return {
-        name: (query.name as string) || null,
+        name: nameFilter || DEFAULT_LIVE_FILTERS.name,
       };
     },
   });
@@ -126,7 +133,7 @@ export const FullExampleWithPaging: FC<UrlParamsFilteredTableProps> = ({
         >
           <div className="row g-2 align-items-end flex-lg-nowrap">
             <div className="col-12 col-md-4 col-lg-3">
-              <FormLabel htmlFor="name">Name</FormLabel>
+              <BsFormLabel htmlFor="name">Name</BsFormLabel>
               <input
                 id="name"
                 type="text"
@@ -201,7 +208,6 @@ export const FullExampleWithPaging: FC<UrlParamsFilteredTableProps> = ({
         </table>
       </div>
 
-      {/* Pager */}
       <Pagination
         totalItems={data?.total || 0}
         currentPage={liveFilters.page}
