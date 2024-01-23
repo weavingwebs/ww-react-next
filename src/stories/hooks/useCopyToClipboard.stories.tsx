@@ -1,7 +1,8 @@
 import { Meta } from '@storybook/react';
 import { FC } from 'react';
 import { FaCopy } from 'react-icons/fa6';
-import { OverlayTrigger, Tooltip } from 'react-bootstrap';
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import Tooltip from 'react-bootstrap/Tooltip';
 import { useCopyToClipboard } from '../../hooks';
 
 const TEXT_TO_COPY = 'This is some text to copy';

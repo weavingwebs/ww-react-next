@@ -83,6 +83,8 @@ module.exports = {
           // https://github.com/chakra-ui/chakra-ui/issues/7363
           'next/link',
           'next/router',
+          // Require .js extension on any react-bootstrap imports.
+          'react-bootstrap',
         ],
       },
     ],
