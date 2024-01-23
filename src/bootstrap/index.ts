@@ -15,3 +15,4 @@ export * from './BsFormError';
 export * from './BsFormLabel';
 export * from './BsFormInput';
 export * from './BsFormText';
+export * from './ErrorModal';
