@@ -1,5 +1,4 @@
-import * as React from 'react';
-import Modal from 'react-bootstrap/Modal';
+import Modal from 'react-bootstrap/cjs/Modal.js';
 import { FC, PropsWithChildren } from 'react';
 import { ErrorMessage } from '../ErrorMessage';
 import { Button } from '../Button';
