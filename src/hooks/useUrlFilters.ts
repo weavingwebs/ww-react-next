@@ -85,7 +85,12 @@ export function useUrlFilters<F extends {}, L extends F>({
           }
         }
       );
-      return router.replace({ query: newQuery });
+      return router.replace({
+        // Include current pathname so allow this to work on dynamic routes.
+        // https://nextjs.org/docs/messages/href-interpolation-failed
+        pathname: window.location.pathname,
+        query: newQuery,
+      });
     },
     [router]
   );
