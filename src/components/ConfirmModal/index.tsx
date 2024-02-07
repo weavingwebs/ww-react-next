@@ -44,6 +44,7 @@ export const ConfirmModal: FC<ConfirmModalProps> = ({
       // Don't allow dismissing while confirming.
       backdrop={isConfirming ? 'static' : undefined}
       size={size}
+      animation={false}
     >
       <BootstrapModal.Header closeButton={!isConfirming}>
         <BootstrapModal.Title>
