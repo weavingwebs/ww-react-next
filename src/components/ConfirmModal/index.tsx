@@ -11,7 +11,7 @@ export const ConfirmModal: FC<ConfirmModalProps> = ({
   confirmBtnLabel,
   onConfirm,
   size,
-  cancelText,
+  cancelBtnLabel,
   confirmButtonStyle,
   isPositiveAction,
   isOpen,
@@ -59,7 +59,7 @@ export const ConfirmModal: FC<ConfirmModalProps> = ({
         <div className="d-flex justify-content-end">
           {!isConfirming && (
             <Button variant="danger" outlined onClick={onCancel}>
-              {cancelText || 'Cancel'}
+              {cancelBtnLabel || 'Cancel'}
             </Button>
           )}
           <Button
