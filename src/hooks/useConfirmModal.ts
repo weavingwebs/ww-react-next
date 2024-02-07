@@ -2,7 +2,7 @@ import { CSSProperties, ReactNode, useCallback, useReducer } from 'react';
 import { ModalReducerCloseAction, ModalReducerState } from './useModal';
 
 export type ConfirmModalConfig = {
-  cancelText?: string;
+  cancelBtnLabel?: string;
   confirmBtnLabel?: ReactNode;
   confirmButtonStyle?: CSSProperties;
   confirmLine?: ReactNode;
