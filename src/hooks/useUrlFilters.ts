@@ -2,6 +2,7 @@ import { NextRouter } from 'next/router.js';
 import { useCallback, useEffect, useMemo, useReducer, useState } from 'react';
 import isEqual from 'lodash/isEqual';
 import { ParsedUrlQueryInput } from 'node:querystring';
+import { booleanToBooleanish } from '../util';
 
 type PagingInput = {
   limit: number;
@@ -80,7 +81,14 @@ export function useUrlFilters<F extends {}, L extends F>({
       const newQuery: UrlParams = {};
       Object.entries(toQuery({ ...filters, ...newFilters })).forEach(
         ([k, v]) => {
-          if (v) {
+          // Filter out empties.
+          if (typeof v === 'undefined' || v === null || v === '') {
+            return;
+          }
+          // Convert any boolean to 'true' or 'false'.
+          if (typeof v === 'boolean') {
+            newQuery[k] = booleanToBooleanish(v);
+          } else {
             newQuery[k] = v;
           }
         }
