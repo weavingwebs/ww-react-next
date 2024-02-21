@@ -75,6 +75,7 @@ export type FormInputBaseProps<T extends FieldValues> = {
   // Pre-input wrapper JSX (i.e. label spacer).
   prefix?: ReactNode;
   required?: boolean;
+  step?: string;
   style?: CSSProperties;
 };
 
