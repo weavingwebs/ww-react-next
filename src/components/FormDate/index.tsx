@@ -126,7 +126,7 @@ export function FormDate<T extends FieldValues>({
           // Must override type.
           type={type}
           value={value}
-          id={name}
+          id={id}
           className={clsx(inputClassName, { 'is-invalid': error })}
           aria-invalid={error ? 'true' : 'false'}
           aria-errormessage={error ? `${name}Error` : undefined}
