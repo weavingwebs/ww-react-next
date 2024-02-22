@@ -5,6 +5,7 @@ import {
   useFormContext,
 } from 'react-hook-form';
 import {
+  ChangeEvent,
   ComponentType,
   CSSProperties,
   HTMLInputTypeAttribute,
@@ -72,6 +73,9 @@ export type FormInputBaseProps<T extends FieldValues> = {
   max?: string | number;
   min?: string | number;
   name: Path<T>;
+  onChange?: (
+    ev: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => boolean;
   // Pre-input wrapper JSX (i.e. label spacer).
   prefix?: ReactNode;
   required?: boolean;
@@ -103,6 +107,7 @@ export function FormInput<T extends FieldValues>({
   inputPrefix,
   inputWrapperClassName,
   inputSuffix,
+  onChange,
   ...asProps
 }: FormInputProps<T>): ReactElement | null {
   const id = useId();
@@ -162,6 +167,12 @@ export function FormInput<T extends FieldValues>({
             const { value } = ev.target;
             field.onChange(value.trim());
             field.onBlur();
+          }}
+          onChange={(ev) => {
+            if (onChange && !onChange(ev)) {
+              return;
+            }
+            field.onChange(ev);
           }}
           id={id}
           className={clsx(inputClassName, error && inputInvalidClassName)}
