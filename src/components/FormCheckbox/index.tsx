@@ -1,4 +1,10 @@
-import { ComponentType, ReactElement, ReactNode, useId } from 'react';
+import {
+  ChangeEvent,
+  ComponentType,
+  ReactElement,
+  ReactNode,
+  useId,
+} from 'react';
 import {
   Control,
   FieldValues,
@@ -30,6 +36,7 @@ export type FormCheckboxProps<T extends FieldValues> = {
   label: ReactNode;
   labelClassName?: string;
   name: Path<T>;
+  onChange?: (ev: ChangeEvent<HTMLInputElement>) => boolean;
   // Pre-input wrapper JSX (i.e. label spacer).
   prefix?: ReactNode;
   // Only use if the checkbox MUST be ticked.
@@ -52,6 +59,7 @@ export function FormCheckbox<T extends FieldValues>({
   disabled,
   prefix,
   control: _control,
+  onChange,
 }: FormCheckboxProps<T>): ReactElement | null {
   const id = useId();
 
@@ -83,6 +91,12 @@ export function FormCheckbox<T extends FieldValues>({
       <div className={inputWrapperClassName}>
         <input
           {...field}
+          onChange={(ev) => {
+            if (onChange && !onChange(ev)) {
+              return;
+            }
+            field.onChange(ev);
+          }}
           checked={field.value}
           type="checkbox"
           id={id}
