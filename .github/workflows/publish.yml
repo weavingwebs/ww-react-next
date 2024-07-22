@@ -12,21 +12,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Set up Node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: lts/*
           cache: 'yarn'
           registry-url: 'https://npm.pkg.github.com'
 
+      - name: Setup npm auth
+        run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.PUBLIC_NPM_TOKEN }}" >> "$NPM_CONFIG_USERCONFIG/.npmrc"
+
       - name: Install dependencies
         run: yarn install --frozen-lockfile
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.PUBLIC_NPM_TOKEN }}
 
       - name: Build and Deploy Storybook
         run: yarn deploy-storybook --ci
