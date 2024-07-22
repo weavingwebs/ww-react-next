@@ -23,11 +23,10 @@ jobs:
           cache: 'yarn'
           registry-url: 'https://npm.pkg.github.com'
 
-      - name: Setup npm auth
-        run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.PUBLIC_NPM_TOKEN }}" >> ~/.npmrc
-
       - name: Install dependencies
         run: yarn install --frozen-lockfile
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.PUBLIC_NPM_TOKEN }}
 
       - name: Build and Deploy Storybook
         run: yarn deploy-storybook --ci
