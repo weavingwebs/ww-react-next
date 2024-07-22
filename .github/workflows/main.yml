@@ -23,6 +23,9 @@ jobs:
           node-version: lts/*
           cache: 'yarn'
 
+      - name: Setup npm auth
+        run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.PUBLIC_NPM_TOKEN }}" >> ~/.npmrc
+
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
