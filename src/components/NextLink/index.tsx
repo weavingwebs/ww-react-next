@@ -1,15 +1,15 @@
-import NextLink, { LinkProps as NextLinkProps } from 'next/link.js';
+import LinkFromNext, { LinkProps as LinkFromNextProps } from 'next/link.js';
 import clsx from 'clsx';
 import { AnchorHTMLAttributes, FC, PropsWithChildren } from 'react';
-import { isAbsoluteUrl } from '../../util';
+import { isAbsoluteUrl } from '@weavingwebs/ww-react';
 
-export type LinkProps = PropsWithChildren &
-  Omit<AnchorHTMLAttributes<HTMLAnchorElement>, keyof NextLinkProps> &
-  NextLinkProps & {
+export type NextLinkProps = PropsWithChildren &
+  Omit<AnchorHTMLAttributes<HTMLAnchorElement>, keyof LinkFromNextProps> &
+  LinkFromNextProps & {
     noLinkClass?: boolean;
   };
 
-export const Link: FC<LinkProps> = ({
+export const NextLink: FC<NextLinkProps> = ({
   href,
   onClick,
   noLinkClass,
@@ -26,7 +26,7 @@ export const Link: FC<LinkProps> = ({
     );
   }
   return (
-    <NextLink
+    <LinkFromNext
       className={className}
       href={href}
       onClick={(ev) => {
@@ -44,6 +44,6 @@ export const Link: FC<LinkProps> = ({
       {...props}
     >
       {children}
-    </NextLink>
+    </LinkFromNext>
   );
 };

@@ -9,7 +9,7 @@ import {
   FullPageLoading,
   Pagination,
   TableResultsWithPlaceholder,
-} from '../../bootstrap';
+} from '@weavingwebs/ww-react';
 import { getData, MockDataQueryResult } from '../mocks';
 import { useUrlFiltersWithPage } from '../../hooks';
 

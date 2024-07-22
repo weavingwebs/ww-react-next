@@ -1,5 +1,5 @@
+import { SearchableSelectOption } from '@weavingwebs/ww-react';
 import mockData from './mockData.json';
-import { SearchableSelectOption } from '../../components';
 
 export type PagingInput = {
   limit: number;

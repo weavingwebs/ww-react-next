@@ -2,7 +2,7 @@ import { NextRouter } from 'next/router.js';
 import { useCallback, useEffect, useMemo, useReducer, useState } from 'react';
 import isEqual from 'lodash/isEqual';
 import { ParsedUrlQueryInput } from 'node:querystring';
-import { booleanToBooleanish } from '../util';
+import { booleanToBooleanish } from '@weavingwebs/ww-react';
 
 type PagingInput = {
   limit: number;

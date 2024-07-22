@@ -1,6 +1,6 @@
 import { FC, useEffect } from 'react';
 import { useRouter } from 'next/router.js';
-import { FullPageLoading } from '../../bootstrap';
+import { FullPageLoading } from '@weavingwebs/ww-react';
 
 export const Redirect: FC<{
   href: string;
