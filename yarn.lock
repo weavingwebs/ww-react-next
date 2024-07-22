@@ -5530,10 +5530,10 @@
     loupe "^2.3.6"
     pretty-format "^29.5.0"
 
-"@weavingwebs/ww-react@^0.4.5":
-  version "0.4.5"
-  resolved "https://npm.pkg.github.com/download/@weavingwebs/ww-react/0.4.5/8f26346c1d2598f2a6361ea5a9212214b0152609#8f26346c1d2598f2a6361ea5a9212214b0152609"
-  integrity sha512-VPUTUId6zUf9M8EQKTC0BNZGQtECD2Md2BN9KkPbA6Zz9CqoR1boSvKnFLlxXlBVObHc1aKDJUO0XOQdoD7zIg==
+"@weavingwebs/ww-react@^0.4.6":
+  version "0.4.6"
+  resolved "https://npm.pkg.github.com/download/@weavingwebs/ww-react/0.4.6/f7afd98fce4d0adec85a223f063c8c416cc97725#f7afd98fce4d0adec85a223f063c8c416cc97725"
+  integrity sha512-eNI/RH9FyT/DMF5qK0rmXpmqcAFqXe1CwjR5OV4zMRqaq7Mp9ctlnPUivj6HREpDVvzJr+LsI8mRFupSE33FRw==
   dependencies:
     react-bootstrap "^2.9.1"
     react-select "^5.7.7"
