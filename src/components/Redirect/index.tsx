@@ -5,13 +5,13 @@ import { FullPageLoading } from '@weavingwebs/ww-react';
 export const Redirect: FC<{
   href: string;
 }> = ({ href }) => {
-  const { isReady, push } = useRouter();
+  const { isReady, replace } = useRouter();
 
   useEffect(() => {
     if (!isReady) {
       return;
     }
-    void push(href);
+    void replace(href);
   }, [isReady, href]);
 
   return <FullPageLoading />;
